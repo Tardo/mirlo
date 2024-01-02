@@ -1,0 +1,8 @@
+# Distribution extension package
+/dist
+
+# Caches
+/node_modules
+
+# Test logs
+*.log

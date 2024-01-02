@@ -1,0 +1,9 @@
+node_modules
+.github
+.husky
+dist
+*.code-workspace
+*.lock
+*.toml
+package-lock.json
+scripts/
