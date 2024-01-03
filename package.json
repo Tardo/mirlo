@@ -1,14 +1,16 @@
 {
   "name": "mirlo",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "type": "module",
-  "description": "This is not a framework",
-  "main": "dist/mirlo.mjs",
+  "keywords": ["initiator", "simple", "javascript", "browser"],
+  "description": "Simple javascript initiator",
+  "main": "./dist/mirlo.mjs",
+  "exports": "./dist/mirlo.mjs",
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/Tardo/mirlo.git"
   },
-  "author": "Alexandre D. Díaz",
+  "author": "Alexandre",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/Tardo/mirlo/issues"
@@ -19,10 +21,12 @@
     "release": "node scripts/release.mjs",
     "clean": "rm -rf ./dist",
     "lint:dev": "eslint --cache --color --fix .",
-    "dev:watch": "rollup -c -w"
+    "dev:watch": "rollup -c -w",
+    "build": "rollup -c"
   },
   "devDependencies": {
     "@rollup/plugin-alias": "^5.0.1",
+    "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-terser": "^0.4.4",
     "async-mutex": "^0.4.0",
