@@ -1,5 +1,5 @@
-import domSetAttributes from '../utils/dom_set_attributes';
-import Component from '../base/component';
+import $ from 'jquery-slim';
+import {Component} from 'mirlo';
 
 export default class LazyComponent extends Component {
   LAZY_ELEMENT_CLASS = 'lazy';
@@ -29,11 +29,10 @@ export default class LazyComponent extends Component {
     dom_el.removeClass(this.LAZY_ELEMENT_CLASS);
     const attrs = this.getNormalizedAttributes(dom_el, true);
     if (dom_el?.dataset.createTag) {
-      const new_dom_elm = document.createElement(dom_el.dataset.createTag);
-      domSetAttributes(new_dom_elm, attrs);
+      const new_dom_elm = $(`<${dom_el.dataset.createTag}>`, attrs);
       dom_el.replaceWith(new_dom_elm);
     } else {
-      domSetAttributes(dom_el, attrs);
+      $(dom_el).attr(attrs);
     }
   }
 

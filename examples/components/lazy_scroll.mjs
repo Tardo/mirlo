@@ -1,4 +1,4 @@
-import debounce from '../utils/debounce';
+import $ from 'jquery-slim';
 import LazyComponent from './lazy';
 
 export default class LazyScrollComponent extends LazyComponent {
@@ -17,7 +17,7 @@ export default class LazyScrollComponent extends LazyComponent {
       },
       this.options,
     );
-    this.load = debounce(
+    this.load = $.debounce(
       this.#doLazyLoad.bind(this),
       this.options.bounce_time_scroll,
     );
@@ -37,7 +37,8 @@ export default class LazyScrollComponent extends LazyComponent {
     });
   }
 
-  #getDimensions($elm) {
+  #getDimensions(dom_el) {
+    const $elm = $(dom_el);
     const $offset = $elm.offset();
     const left = $offset.left;
     const top = $offset.top;

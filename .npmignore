@@ -1,0 +1,13 @@
+.github/
+.husky/
+examples/
+node_modules/
+tests/
+.editorconfig
+.eslintignore
+.prettierignore
+mirlo.code-workspace
+mirlo.png
+package-lock.json
+rollup.config.mjs
+setup-jest.mjs

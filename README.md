@@ -54,9 +54,9 @@ app.registerComponent('demo01', Demo01);
 
 ### Available Services:
 
-- requests: Do HTTP operations
-- localStorage: Do local storage operations
-- sessionStorage: Do session storage operations
+- requests: HTTP operations (always included)
+- localStorage: Local storage operations
+- sessionStorage: Session storage operations
 
 ### Example
 
@@ -66,14 +66,12 @@ app.registerComponent('demo01', Demo01);
 import {Component} from 'mirlo';
 
 export default class Demo01 extends Component {
-  useServices = ['requests'];
+  useServices = ['localStorage'];
 
   onStart() {
     super.onStart();
-    this.dom_el.innerHTML = '<strong>Hello World!</strong>';
-    this.requests
-      .postJSON('/demo01')
-      .then(result => (this.dom_el.innerHTML = result));
+    const username = this.localStorage.getItem('username');
+    this.dom_el.innerHTML = `<strong>Hello ${username}!</strong>`;
   }
 }
 ```
