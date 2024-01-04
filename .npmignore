@@ -2,6 +2,7 @@
 .husky/
 examples/
 node_modules/
+src/
 tests/
 .editorconfig
 .eslintignore
