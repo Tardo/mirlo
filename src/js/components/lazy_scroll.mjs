@@ -1,7 +1,7 @@
 import debounce from '../utils/debounce';
 import LazyComponent from './lazy';
 
-export class LazyScroll extends LazyComponent {
+export class LazyScrollComponent extends LazyComponent {
   events = {
     scroll: this.#onScrollContainer,
   };

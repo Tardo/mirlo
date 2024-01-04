@@ -1,6 +1,7 @@
 import domAddEventListener from '../utils/dom_add_event_listener.mjs';
 import domRemoveEventListener from '../utils/dom_remove_event_listener.mjs';
 import domGetData from '../utils/dom_get_data';
+import domGetComponentObj from '../utils/dom_get_component_object';
 import Component from './component.mjs';
 
 /** Boot Mirlo **/
@@ -10,6 +11,7 @@ class App extends Component {
     services: {},
   };
   #services = {};
+  #observer = null;
 
   constructor(parent, target, options, internal_data) {
     super(parent, target, options);
@@ -23,6 +25,7 @@ class App extends Component {
       service.destroy();
     }
     this.#services = [];
+    this.#observer.disconnect();
     domRemoveEventListener('click', "[class~='dropdown']");
     domRemoveEventListener('click', '[data-dismiss]');
   }
@@ -64,6 +67,14 @@ class App extends Component {
     return this.#services[name];
   }
 
+  getComponentById(id) {
+    const dom_el = this.query(`#${id}`);
+    if (!dom_el) {
+      return undefined;
+    }
+    return domGetComponentObj(dom_el);
+  }
+
   onWillStart() {
     return super
       .onWillStart()
@@ -77,6 +88,10 @@ class App extends Component {
 
   onStart() {
     super.onStart();
+    // Observer
+    this.#observer = new MutationObserver(this.#onObserver.bind(this));
+    this.#observer.observe(document.body, {childList: true, subtree: true});
+
     // Assign core event
     domAddEventListener(
       'click',
@@ -109,38 +124,33 @@ class App extends Component {
     const tasks = [];
     const components = this.queryAll('[data-component]');
     for (const dom_elm of components) {
-      const dom_elm_data = domGetData(dom_elm);
-      if (Object.hasOwn(dom_elm_data, 'component_obj')) {
+      if (domGetComponentObj(dom_elm)) {
         continue;
       }
       const component_name = dom_elm.dataset.component;
       const component_cls = this.getComponentClass(component_name);
       const parent_component = dom_elm.closest('[data-component]');
-      const dom_parent_elm_data = domGetData(parent_component);
-      const parent_component_cls =
-        parent_component && dom_parent_elm_data.component_obj;
+      const parent_component_obj =
+        parent_component && domGetComponentObj(parent_component);
       const component_options = {};
-      Object.keys(dom_elm_data).forEach(optionName => {
+      Object.keys(dom_elm.dataset).forEach(optionName => {
         if (optionName.startsWith('componentOption')) {
           const componentOptionName = optionName
             .replace(/^componentOption/, '')
             .toLowerCase();
-          component_options[componentOptionName] = dom_elm_data[optionName];
+          component_options[componentOptionName] = dom_elm.dataset[optionName];
         }
       });
       if (component_cls) {
         const component = new component_cls(
-          parent_component_cls || this,
+          parent_component_obj || this,
           dom_elm,
           component_options,
         );
         this.#assignServices(component);
+        const dom_elm_data = domGetData(dom_elm);
         Object.assign(dom_elm_data, {component_obj: component});
-        tasks.push(
-          component.onWillStart().then(() => {
-            component.onStart();
-          }),
-        );
+        tasks.push(component.onWillStart().then(() => component.onStart()));
       } else {
         console.warn(`Can't found the '${component_name}' component!`, dom_elm);
       }
@@ -152,6 +162,32 @@ class App extends Component {
   #assignServices(component) {
     for (const service_name of component.useServices) {
       component[service_name] = this.#services[service_name];
+    }
+  }
+
+  #onObserver(mutations) {
+    let need_load_components = false;
+    const destroy_nodes_component = function (cnode) {
+      for (const child of cnode.childNodes) {
+        destroy_nodes_component(child);
+      }
+      const cnode_component_obj = domGetComponentObj(cnode);
+      if (cnode_component_obj) {
+        cnode_component_obj.destroy();
+      }
+    };
+    mutations.forEach(mutation => {
+      if (mutation.type === 'childList') {
+        if (mutation.addedNodes.length) {
+          need_load_components = true;
+        }
+        for (const rnode of mutation.removedNodes) {
+          destroy_nodes_component(rnode);
+        }
+      }
+    });
+    if (need_load_components) {
+      this.#initializeComponents();
     }
   }
 

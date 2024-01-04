@@ -1,78 +1,163 @@
-
 <h1 align="center">
   <img src="mirlo.png" />
   <div>Mirlo</div>
-  <div style='font-size:x-small'>Simple javascript initiator</div>
+  <div>- Simple JavaScript Initiator -</div>
 </h1>
 
-1. Basic Usage
+## Installation
 
-+ HTML:
-```html
-<div data-component="demo01"></div>
+```bash
+npm i mirlo
 ```
 
-+ JS 'Component':
+## Basic Usage
+
+- HTML:
+
+```html
+<div id="demoA" data-component="demo01"></div>
+```
+
+- JS 'Component':
+
 ```javascript
-import {Component} from "mirlo";
+import {Component} from 'mirlo';
 
 export default class Demo01 extends Component {
   events = {
-    "click": this.#onClick,
+    click: this.#onClick,
   };
 
   onStart() {
     super.onStart();
-    this.dom_el.innerHTML = "<strong>Hello World!</strong>";
+    this.dom_el.innerHTML = '<strong>Hello World!</strong>';
   }
 
   #onClick() {
-    this.dom_el.innerHTML = "<strong>Clicked!</strong>";
+    this.dom_el.innerHTML = '<strong>Clicked!</strong>';
   }
 }
 ```
 
-+ JS 'Main':
-```javascript
-import app from "mirlo";
-import Demo01 from "./components/demo01";
+- JS 'Main':
 
-app.registerComponent("demo01", Demo01);
+```javascript
+import app from 'mirlo';
+import Demo01 from './components/demo01';
+
+app.registerComponent('demo01', Demo01);
 ```
 
 ---
 
-2. Use Services
+## Use Built-in Services
 
-+ JS 'Component':
+### Available Services:
+
+- requests: Do HTTP operations
+- localStorage: Do local storage operations
+- sessionStorage: Do session storage operations
+
+### Example
+
+- JS 'Component':
+
 ```javascript
-import {Component} from "mirlo";
+import {Component} from 'mirlo';
 
 export default class Demo01 extends Component {
   useServices = ['requests'];
 
   onStart() {
     super.onStart();
-    this.dom_el.innerHTML = "<strong>Hello World!</strong>";
-    this.requests.postJSON("/demo01").then(result => this.dom_el.innerHTML = result);
+    this.dom_el.innerHTML = '<strong>Hello World!</strong>';
+    this.requests
+      .postJSON('/demo01')
+      .then(result => (this.dom_el.innerHTML = result));
   }
 }
 ```
 
+## Create Custom Service
+
+- JS 'Service':
+
+```javascript
+import {Service} from 'mirlo';
+
+export default class MyService extends Service {
+  getUsername(item) {
+    return 'Yo';
+  }
+}
+```
+
+- JS 'Component':
+
+```javascript
+import {Component} from 'mirlo';
+
+export default class Demo01 extends Component {
+  useServices = ['myService'];
+
+  onStart() {
+    super.onStart();
+    this.dom_el.innerHTML = `<strong>Hello ${this.myService.getUsername()}!</strong>`;
+  }
+}
+```
+
+- JS 'Main':
+
+```javascript
+import app from 'mirlo';
+import Demo01 from './components/demo01';
+import MyService from './serices/myservice';
+
+app.registerService('myService', MyService);
+app.registerComponent('demo01', Demo01);
+```
+
+## Extend Built-in Services
+
+- JS 'Service':
+
+```javascript
+import {RequestsService} from 'mirlo';
+
+export default class MyRequestsService extends RequestsService {
+  getHeaders(custom_headers) {
+    return defaults(custom_headers, {
+      'X-CSRFToken': requestInfo.csrftoken,
+    });
+  }
+}
+```
+
+- JS 'Main':
+
+```javascript
+import app from 'mirlo';
+import MyRequestsService from './serices/myrequestsservice';
+
+app.registerService('requests', MyRequestsService, true);
+```
+
 ---
 
-3. Fetch Data
+## Fetch Data
 
-+ JS 'Component':
+- JS 'Component':
+
 ```javascript
-import {Component} from "mirlo";
+import {Component} from 'mirlo';
 
 export default class Demo01 extends Component {
   onWillStart() {
     this.fetchData.chart = {
-      endpoint: "/get_demo01_data",
+      endpoint: '/get_demo01_data',
       data: {
-        valueA: "this is a tests!",
+        valueA: 'this is a tests!',
         valueB: 42,
       },
     };
@@ -84,3 +169,30 @@ export default class Demo01 extends Component {
     this.dom_el.innerHTML = this.data.chart.response_value_a;
   }
 }
+```
+
+---
+
+## State Binds
+
+- HTML
+
+```html
+<div
+  id="demoA"
+  data-component="demo01"
+  data-component-state-binds="desc-html title-title"
+></div>
+```
+
+- JS 'Main':
+
+```javascript
+import app from 'mirlo';
+
+const component_obj = app.getComponentById('demoA');
+Object.assign(component_obj.state, {
+  desc: '<i>State changed!</i>',
+  title: 'New Title',
+});
+```

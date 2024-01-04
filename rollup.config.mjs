@@ -1,7 +1,7 @@
 /* eslint-disable */
 import alias from '@rollup/plugin-alias';
 import {nodeResolve} from '@rollup/plugin-node-resolve';
-import commonjs from "@rollup/plugin-commonjs";
+import commonjs from '@rollup/plugin-commonjs';
 import terser from '@rollup/plugin-terser';
 import autoprefixer from 'autoprefixer';
 import cssnano from 'cssnano';
@@ -11,11 +11,11 @@ import postcss from 'rollup-plugin-postcss';
 
 const is_production = process.env.NODE_ENV === 'production';
 
+console.log(process.env.NODE_ENV);
+
 export default [
   {
-    input: [
-      'src/js/mirlo.mjs',
-    ],
+    input: ['src/js/mirlo.mjs'],
     output: {
       sourcemap: (!is_production && 'inline') || false,
       format: 'esm',
@@ -26,10 +26,6 @@ export default [
     plugins: [
       alias({
         entries: [
-          {
-            find: '@mirlo',
-            replacement: path.resolve('src/js'),
-          },
           {
             find: '@css',
             replacement: path.resolve('src/css'),
@@ -50,9 +46,7 @@ export default [
     ],
     watch: {
       clearScreen: false,
-      include: [
-        'src/**',
-      ],
+      include: ['src/**'],
     },
   },
 ];

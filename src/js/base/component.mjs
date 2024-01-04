@@ -1,9 +1,13 @@
+import ComponentStateHandler from './state';
+
 export default class {
   useServices = [];
   fetchData = {};
   data = {};
   #parent = null;
   #childrens = [];
+  #root_state = {};
+  state = null;
 
   constructor(parent, target, options) {
     // Force 'requests' service
@@ -13,6 +17,10 @@ export default class {
     this.options = options || {};
     this.setParent(parent);
     this.setElement(target);
+    const state_handler = Object.assign({}, ComponentStateHandler, {
+      component_obj: this,
+    });
+    this.state = new Proxy(this.#root_state, state_handler);
   }
 
   onWillStart() {
@@ -43,13 +51,14 @@ export default class {
     }
   }
 
+  remove() {
+    this.dom_el.remove();
+  }
+
   destroy() {
-    if (this.#parent) {
-      this.#parent.removeChildren(this);
-    }
-    for (const children of this.#childrens) {
-      children.destroy();
-    }
+    // for (const children of this.#childrens) {
+    //   children.destroy();
+    // }
     this.#childrens = [];
     for (const cevent in this.events) {
       const [event_name, ...event_rest] = cevent.split(' ');

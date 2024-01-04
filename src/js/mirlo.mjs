@@ -3,16 +3,18 @@ import {app} from './base/app';
 import Component from './base/component';
 import Service from './base/service';
 
-// Register services
-import {
-  LocalStorageService,
-  SessionStorageService,
-} from './services/storage.mjs';
-import RequestsService from './services/requests.mjs';
+import {LocalStorageService, SessionStorageService} from './services/storage';
+import RequestsService from './services/requests';
+
+import LazyClickComponent from './components/lazy_click';
+import LazyScrollComponent from './components/lazy_scroll';
 
 app.registerService('requests', RequestsService);
 app.registerService('localStorage', LocalStorageService);
 app.registerService('sessionStorage', SessionStorageService);
+
+app.registerComponent('lazyClick', LazyClickComponent);
+app.registerComponent('lazyScroll', LazyScrollComponent);
 
 // On Start APP
 window.addEventListener('load', () => {
@@ -21,5 +23,13 @@ window.addEventListener('load', () => {
   });
 });
 
-export {Component, Service};
+export {
+  Component,
+  Service,
+  LocalStorageService,
+  SessionStorageService,
+  RequestsService,
+  LazyClickComponent,
+  LazyScrollComponent,
+};
 export default app;
