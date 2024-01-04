@@ -1,6 +1,6 @@
 import LazyComponent from './lazy';
 
-export class LazyClickComponent extends LazyComponent {
+export default class LazyClickComponent extends LazyComponent {
   events = {
     [`click .${this.LAZY_ELEMENT_CLASS}`]: this.#onClickLazy,
   };

@@ -1,7 +1,7 @@
 import domSetAttributes from '../utils/dom_set_attributes';
 import Component from '../base/component';
 
-export class LazyComponent extends Component {
+export default class LazyComponent extends Component {
   LAZY_ELEMENT_CLASS = 'lazy';
 
   getNormalizedAttributes(dom_el, remove_attr = false) {
