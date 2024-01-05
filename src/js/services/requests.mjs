@@ -1,5 +1,10 @@
 import Service from '../base/service';
 
+export const METHOD = {
+  POST: 'POST',
+  GET: 'GET',
+};
+
 export default class RequestsService extends Service {
   MESSAGES = {
     e200: '200: Invalid server result!',
@@ -9,9 +14,9 @@ export default class RequestsService extends Service {
     return custom_headers;
   }
 
-  async postJSON(url, data) {
-    const response = await fetch(url, {
-      method: 'POST',
+  async queryJSON(url, data, method = METHOD.POST) {
+    const query_options = {
+      method: method,
       mode: 'same-origin',
       cache: 'no-cache',
       credentials: 'same-origin',
@@ -20,13 +25,24 @@ export default class RequestsService extends Service {
       }),
       redirect: 'follow',
       referrerPolicy: 'same-origin',
-      body: JSON.stringify(data),
-    });
+    };
+    if (data && method.toUpperCase() === METHOD.POST) {
+      query_options.body = JSON.stringify(data);
+    }
+    const response = await fetch(url, query_options);
     const result = response.json();
     if (this.checkServerResult(result)) {
       return result;
     }
     throw Error(this.MESSAGES.e200);
+  }
+
+  postJSON(url, data) {
+    return this.queryJSON(url, data, METHOD.POST);
+  }
+
+  getJSON(url) {
+    return this.queryJSON(url, undefined, METHOD.GET);
   }
 
   async post(url, data, cache = 'default') {
@@ -73,7 +89,8 @@ export default class RequestsService extends Service {
 
   checkServerResult(data) {
     if (!data || typeof data === 'undefined') {
-      return true;
+      return false;
     }
+    return true;
   }
 }

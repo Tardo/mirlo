@@ -10,10 +10,6 @@ export default class {
   state = null;
 
   constructor(parent, target, options) {
-    // Force 'requests' service
-    if (this.useServices.indexOf('requests') === -1) {
-      this.useServices.push('requests');
-    }
     this.options = options || {};
     this.setParent(parent);
     this.setElement(target);

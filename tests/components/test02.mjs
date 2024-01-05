@@ -7,7 +7,12 @@ export class ServiceTest02 extends Service {
 }
 
 export class Test02 extends Component {
-  useServices = ['servTest02'];
+  useServices = ['requests', 'servTest02'];
+
+  onWillStart() {
+    this.fetchData.ipify = {endpoint: 'https://api.ipify.org/?format=json'};
+    return super.onWillStart(...arguments);
+  }
 
   onStart() {
     super.onStart();

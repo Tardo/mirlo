@@ -3,8 +3,11 @@ import {screen} from '@testing-library/dom';
 import app from '../dist/mirlo';
 import Test01 from './components/test01';
 import {ServiceTest02, Test02} from './components/test02';
+import {mockFetch} from './mocks';
 
 beforeAll(async () => {
+  window.fetch = mockFetch({ip: '127.0.0.1'});
+
   app.registerService('servTest02', ServiceTest02);
   app.registerComponent('test01', Test01);
   app.registerComponent('test02', Test02);
@@ -61,4 +64,9 @@ test('component state', () => {
   componentTestB.state.title = 'The title';
   const elm = componentTestB.query("[title='The title']");
   expect(elm).toBeVisible();
+});
+
+test('component fetch data', () => {
+  const componentTestB = app.getComponentById('testB');
+  expect(componentTestB.data.ipify.ip).toBe('127.0.0.1');
 });
