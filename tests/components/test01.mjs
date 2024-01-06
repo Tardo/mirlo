@@ -5,8 +5,8 @@ export default class Test01 extends Component {
     click: this.#onClick,
   };
 
-  destroy() {
-    super.destroy();
+  onDestroy() {
+    super.onDestroy();
     ++window.comp_rmv_count;
   }
 

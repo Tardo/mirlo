@@ -11,11 +11,9 @@ app.registerService('localStorage', LocalStorageService);
 app.registerService('sessionStorage', SessionStorageService);
 
 // On Start APP
-window.addEventListener('load', () => {
-  app.onWillStart().then(() => {
-    app.onStart();
-  });
-});
+window.addEventListener('load', () =>
+  app.onWillStart().then(() => app.onStart()),
+);
 
 export {
   Component,

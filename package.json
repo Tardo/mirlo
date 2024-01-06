@@ -1,6 +1,6 @@
 {
   "name": "mirlo",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "type": "module",
   "keywords": [
     "initiator",
@@ -8,7 +8,7 @@
     "javascript",
     "browser"
   ],
-  "description": "Simple javascript initiator",
+  "description": "Another Simple JavaScript Initiator",
   "main": "./dist/mirlo.mjs",
   "exports": "./dist/mirlo.mjs",
   "repository": {
@@ -26,6 +26,8 @@
     "clean": "rm -rf ./dist",
     "dev:lint": "export NODE_ENV=development && prettier . --write && eslint --cache --color --fix .",
     "dev:watch": "export NODE_ENV=development && rollup -c -w",
+    "dev:build": "export NODE_ENV=development && rollup -c",
+    "dev:test": "npm run dev:build && node --experimental-vm-modules node_modules/.bin/jest",
     "build": "export NODE_ENV=production && rollup -c",
     "test": "npm run build && node --experimental-vm-modules node_modules/.bin/jest"
   },

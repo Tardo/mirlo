@@ -1,7 +1,7 @@
 <h1 align="center">
   <img src="mirlo.png" />
   <div>Mirlo</div>
-  <div>- Simple JavaScript Initiator -</div>
+  <div>- Another Simple JavaScript Initiator -</div>
 </h1>
 
 ## Installation
@@ -54,7 +54,7 @@ app.registerComponent('demo01', Demo01);
 
 ### Available Services:
 
-- requests: HTTP operations (always included)
+- requests: HTTP operations
 - localStorage: Local storage operations
 - sessionStorage: Session storage operations
 
@@ -151,11 +151,13 @@ app.registerService('requests', MyRequestsService, true);
 import {Component} from 'mirlo';
 
 export default class Demo01 extends Component {
+  useServices = ['requests']; // Mandatory due to fetchData usage
+
   onWillStart() {
     this.fetchData.chart = {
       endpoint: '/get_demo01_data',
       data: {
-        valueA: 'this is a tests!',
+        valueA: 'this is a test!',
         valueB: 42,
       },
     };

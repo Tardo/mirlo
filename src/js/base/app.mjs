@@ -1,6 +1,5 @@
 import domAddEventListener from '../utils/dom_add_event_listener.mjs';
 import domRemoveEventListener from '../utils/dom_remove_event_listener.mjs';
-import domGetData from '../utils/dom_get_data';
 import domGetComponentObj from '../utils/dom_get_component_object';
 import Component from './component.mjs';
 
@@ -20,10 +19,7 @@ class App extends Component {
 
   destroy() {
     super.destroy();
-    const services = Object.values(this.#services);
-    for (const service of services) {
-      service.destroy();
-    }
+    Object.values(this.#services).forEach(service => service.destroy());
     this.#services = [];
     this.#observer.disconnect();
     domRemoveEventListener('click', "[class~='dropdown']");
@@ -82,7 +78,7 @@ class App extends Component {
         return this.#initializeServices();
       })
       .then(() => {
-        return this.#initializeComponents();
+        return this.#initializeComponents(this.dom_el);
       });
   }
 
@@ -120,39 +116,39 @@ class App extends Component {
     return Promise.all(tasks);
   }
 
-  #initializeComponents() {
+  #initializeComponents(dom_base_el) {
     const tasks = [];
-    const components = this.queryAll('[data-component]');
-    for (const dom_elm of components) {
-      if (domGetComponentObj(dom_elm)) {
+    const components = (
+      dom_base_el.parentElement || dom_base_el
+    ).querySelectorAll('[data-component]');
+    for (const dom_el of components) {
+      if (domGetComponentObj(dom_el)) {
         continue;
       }
-      const component_name = dom_elm.dataset.component;
+      const component_name = dom_el.dataset.component;
       const component_cls = this.getComponentClass(component_name);
-      const parent_component = dom_elm.closest('[data-component]');
+      const parent_component = dom_el.closest('[data-component]');
       const parent_component_obj =
         parent_component && domGetComponentObj(parent_component);
       const component_options = {};
-      Object.keys(dom_elm.dataset).forEach(optionName => {
+      Object.keys(dom_el.dataset).forEach(optionName => {
         if (optionName.startsWith('componentOption')) {
           const componentOptionName = optionName
             .replace(/^componentOption/, '')
             .toLowerCase();
-          component_options[componentOptionName] = dom_elm.dataset[optionName];
+          component_options[componentOptionName] = dom_el.dataset[optionName];
         }
       });
       if (component_cls) {
         const component = new component_cls(
           parent_component_obj || this,
-          dom_elm,
+          dom_el,
           component_options,
         );
         this.#assignServices(component);
-        const dom_elm_data = domGetData(dom_elm);
-        Object.assign(dom_elm_data, {component_obj: component});
         tasks.push(component.onWillStart().then(() => component.onStart()));
       } else {
-        console.warn(`Can't found the '${component_name}' component!`, dom_elm);
+        console.warn(`Can't found the '${component_name}' component!`, dom_el);
       }
     }
 
@@ -165,30 +161,18 @@ class App extends Component {
     }
   }
 
+  #traverseNodeListOnDestroy(node) {
+    node.childNodes.forEach(cnode => this.#traverseNodeListOnDestroy(cnode));
+    domGetComponentObj(node)?.onDestroy();
+  }
+
   #onObserver(mutations) {
-    let need_load_components = false;
-    const destroy_nodes_component = function (cnode) {
-      for (const child of cnode.childNodes) {
-        destroy_nodes_component(child);
-      }
-      const cnode_component_obj = domGetComponentObj(cnode);
-      if (cnode_component_obj) {
-        cnode_component_obj.destroy();
-      }
-    };
     mutations.forEach(mutation => {
-      if (mutation.type === 'childList') {
-        if (mutation.addedNodes.length) {
-          need_load_components = true;
-        }
-        for (const rnode of mutation.removedNodes) {
-          destroy_nodes_component(rnode);
-        }
-      }
+      mutation.addedNodes.forEach(anode => this.#initializeComponents(anode));
+      mutation.removedNodes.forEach(rnode =>
+        this.#traverseNodeListOnDestroy(rnode),
+      );
     });
-    if (need_load_components) {
-      this.#initializeComponents();
-    }
   }
 
   #onCoreClickDropdown(ev) {
