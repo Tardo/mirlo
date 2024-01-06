@@ -13,9 +13,11 @@ beforeAll(async () => {
   app.registerComponent('test02', Test02);
   document.body.innerHTML = `
     <div id="testA" data-component="test01"></div>
-    <div id="testB" data-component="test02">
-      <div id="test01-title"></div>
-      <div data-component-state-binds="desc-html title-title"></div>
+    <div id="containerB">
+      <div id="testB" data-component="test02">
+        <div id="test01-title"></div>
+        <div data-component-state-binds="desc-html title-title"></div>
+      </div>
     </div>
   `;
   await new Promise(process.nextTick); // flush promises
@@ -37,8 +39,11 @@ test('on-fly initialization', async () => {
   expect(screen.queryByText('Hello World!')).toBeNull();
   const new_div = document.createElement('div');
   new_div.id = 'test-rmv';
-  new_div.dataset.component = 'test01';
-  document.body.appendChild(new_div);
+  const new_div_comp = document.createElement('div');
+  new_div_comp.id = 'test-comp-rmv';
+  new_div_comp.dataset.component = 'test01';
+  new_div.appendChild(new_div_comp);
+  document.getElementById('containerB').appendChild(new_div);
   await new Promise(process.nextTick); // flush promises
   expect(screen.getByText('Hello World!')).toBeVisible();
   expect(screen.getByText('Clicked!')).toBeVisible();

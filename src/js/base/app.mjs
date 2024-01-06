@@ -78,7 +78,9 @@ class App extends Component {
         return this.#initializeServices();
       })
       .then(() => {
-        return this.#initializeComponents(this.dom_el);
+        return this.#initializeComponents(
+          this.dom_el.querySelectorAll('[data-component]'),
+        );
       });
   }
 
@@ -86,7 +88,10 @@ class App extends Component {
     super.onStart();
     // Observer
     this.#observer = new MutationObserver(this.#onObserver.bind(this));
-    this.#observer.observe(document.body, {childList: true, subtree: true});
+    this.#observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+    });
 
     // Assign core event
     domAddEventListener(
@@ -116,12 +121,9 @@ class App extends Component {
     return Promise.all(tasks);
   }
 
-  #initializeComponents(dom_base_el) {
+  #initializeComponents(nodes) {
     const tasks = [];
-    const components = (
-      dom_base_el.parentElement || dom_base_el
-    ).querySelectorAll('[data-component]');
-    for (const dom_el of components) {
+    for (const dom_el of nodes) {
       if (domGetComponentObj(dom_el)) {
         continue;
       }
@@ -161,16 +163,29 @@ class App extends Component {
     }
   }
 
-  #traverseNodeListOnDestroy(node) {
-    node.childNodes.forEach(cnode => this.#traverseNodeListOnDestroy(cnode));
+  #traverseNodeListRemoved(node) {
+    const childrens = node.children || [];
+    for (const cnode of childrens) {
+      this.#traverseNodeListRemoved(cnode);
+    }
     domGetComponentObj(node)?.onDestroy();
+  }
+
+  #traverseNodeListAdded(node) {
+    const childrens = node.children || [];
+    for (const cnode of childrens) {
+      this.#traverseNodeListAdded(cnode);
+    }
+    if (node.dataset?.component) {
+      this.#initializeComponents([node]);
+    }
   }
 
   #onObserver(mutations) {
     mutations.forEach(mutation => {
-      mutation.addedNodes.forEach(anode => this.#initializeComponents(anode));
+      mutation.addedNodes.forEach(rnode => this.#traverseNodeListAdded(rnode));
       mutation.removedNodes.forEach(rnode =>
-        this.#traverseNodeListOnDestroy(rnode),
+        this.#traverseNodeListRemoved(rnode),
       );
     });
   }

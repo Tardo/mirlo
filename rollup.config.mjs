@@ -11,8 +11,6 @@ import postcss from 'rollup-plugin-postcss';
 
 const is_production = process.env.NODE_ENV === 'production';
 
-console.log(process.env.NODE_ENV);
-
 export default [
   {
     input: ['src/js/mirlo.mjs'],
