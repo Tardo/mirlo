@@ -11,6 +11,11 @@ class App extends Component {
   };
   #services = {};
   #observer = null;
+  #queded_mutations = {
+    added: [],
+    removed: [],
+  };
+  #queded_mutations_raf = null;
 
   constructor(parent, target, options, internal_data) {
     super(parent, target, options);
@@ -35,18 +40,6 @@ class App extends Component {
   }
   getComponentClass(name) {
     return this.#registry.components[name];
-  }
-  invokeComponent(name, ...args) {
-    const component_cls = this.getComponentClass(name);
-    if (component_cls) {
-      const component = new component_cls(this, ...args);
-      this.#assignServices(component);
-      component.onWillStart().then(() => {
-        component.onStart();
-      });
-    } else {
-      console.warn(`The component '${name}' don't exists!`);
-    }
   }
 
   registerService(name, service, force = false) {
@@ -121,6 +114,29 @@ class App extends Component {
     return Promise.all(tasks);
   }
 
+  #instantiateComponent(name, ...args) {
+    const component_cls = this.getComponentClass(name);
+    if (component_cls) {
+      const component = new component_cls(...args);
+      this.#assignServices(component);
+      return component.onWillStart().then(() => component.onStart());
+    }
+    return Promise.reject(`Can't found the '${name}' component!`);
+  }
+
+  #getNodeComponentOptions(dom_el) {
+    const component_options = {};
+    Object.keys(dom_el.dataset).forEach(optionName => {
+      if (optionName.startsWith('componentOption')) {
+        const componentOptionName = optionName
+          .replace(/^componentOption/, '')
+          .toLowerCase();
+        component_options[componentOptionName] = dom_el.dataset[optionName];
+      }
+    });
+    return component_options;
+  }
+
   #initializeComponents(nodes) {
     const tasks = [];
     for (const dom_el of nodes) {
@@ -128,32 +144,17 @@ class App extends Component {
         continue;
       }
       const component_name = dom_el.dataset.component;
-      const component_cls = this.getComponentClass(component_name);
       const parent_component = dom_el.closest('[data-component]');
-      const parent_component_obj =
-        parent_component && domGetComponentObj(parent_component);
-      const component_options = {};
-      Object.keys(dom_el.dataset).forEach(optionName => {
-        if (optionName.startsWith('componentOption')) {
-          const componentOptionName = optionName
-            .replace(/^componentOption/, '')
-            .toLowerCase();
-          component_options[componentOptionName] = dom_el.dataset[optionName];
-        }
-      });
-      if (component_cls) {
-        const component = new component_cls(
+      const parent_component_obj = domGetComponentObj(parent_component);
+      tasks.push(
+        this.#instantiateComponent(
+          component_name,
           parent_component_obj || this,
           dom_el,
-          component_options,
-        );
-        this.#assignServices(component);
-        tasks.push(component.onWillStart().then(() => component.onStart()));
-      } else {
-        console.warn(`Can't found the '${component_name}' component!`, dom_el);
-      }
+          this.#getNodeComponentOptions(dom_el),
+        ),
+      );
     }
-
     return Promise.all(tasks);
   }
 
@@ -164,30 +165,53 @@ class App extends Component {
   }
 
   #traverseNodeListRemoved(node) {
-    const childrens = node.children || [];
-    for (const cnode of childrens) {
-      this.#traverseNodeListRemoved(cnode);
+    if (node.children) {
+      for (const cnode of node.children) {
+        this.#traverseNodeListRemoved(cnode);
+      }
     }
     domGetComponentObj(node)?.onDestroy();
   }
 
-  #traverseNodeListAdded(node) {
-    const childrens = node.children || [];
-    for (const cnode of childrens) {
-      this.#traverseNodeListAdded(cnode);
+  #traverseNodeListAdded(node, node_list) {
+    if (Object.hasOwn(node.dataset, 'component')) {
+      node_list.push(node);
     }
-    if (node.dataset?.component) {
-      this.#initializeComponents([node]);
+    if (node.children) {
+      for (const cnode of node.children) {
+        this.#traverseNodeListAdded(cnode, node_list);
+      }
     }
+  }
+
+  #processQuededMutations() {
+    const added_nodes = [];
+    this.#queded_mutations.added.forEach(anode =>
+      this.#traverseNodeListAdded(anode, added_nodes),
+    );
+    this.#initializeComponents(added_nodes);
+    this.#queded_mutations.added = [];
+    this.#queded_mutations.removed.forEach(rnode =>
+      this.#traverseNodeListRemoved(rnode),
+    );
+    this.#queded_mutations.removed = [];
+    this.#queded_mutations_raf = null;
   }
 
   #onObserver(mutations) {
     mutations.forEach(mutation => {
-      mutation.addedNodes.forEach(rnode => this.#traverseNodeListAdded(rnode));
-      mutation.removedNodes.forEach(rnode =>
-        this.#traverseNodeListRemoved(rnode),
-      );
+      this.#queded_mutations.added.push(...mutation.addedNodes);
+      this.#queded_mutations.removed.push(...mutation.removedNodes);
     });
+    if (
+      !this.#queded_mutations_raf &&
+      (this.#queded_mutations.added.length ||
+        this.#queded_mutations.removed.length)
+    ) {
+      this.#queded_mutations_raf = window.requestAnimationFrame(
+        this.#processQuededMutations.bind(this),
+      );
+    }
   }
 
   #onCoreClickDropdown(ev) {

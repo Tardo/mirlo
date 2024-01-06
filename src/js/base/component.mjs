@@ -4,16 +4,16 @@ export default class {
   useServices = [];
   fetchData = {};
   #data = {};
-  #parent = null;
+  #parentComponent = null;
   #childrens = [];
   #root_state = {};
   #dom_el = null;
   state = null;
   events = {};
 
-  constructor(parent, target, options) {
+  constructor(parentComponent, target, options) {
     this.options = options || {};
-    this.parent = parent;
+    this.parentComponent = parentComponent;
     this.dom_el = target;
     const state_handler = Object.assign({}, ComponentStateHandler, {
       component_obj: this,
@@ -95,17 +95,17 @@ export default class {
   /**
    * @returns {Component}
    */
-  get parent() {
-    return this.#parent;
+  get parentComponent() {
+    return this.#parentComponent;
   }
 
-  set parent(value) {
-    if (this.#parent) {
-      this.#parent.removeChildren(this);
+  set parentComponent(value) {
+    if (this.#parentComponent) {
+      this.#parentComponent.removeChildrenComponent(this);
     }
-    this.#parent = value;
-    if (this.#parent) {
-      this.#parent.addChildren(this);
+    this.#parentComponent = value;
+    if (this.#parentComponent) {
+      this.#parentComponent.addChildrenComponent(this);
     }
   }
 
@@ -127,11 +127,11 @@ export default class {
     return this.#data;
   }
 
-  addChildren(component) {
+  addChildrenComponent(component) {
     this.#childrens.push(component);
   }
 
-  removeChildren(component) {
+  removeChildrenComponent(component) {
     this.#childrens = this.#childrens.filter(item => item !== component);
   }
 
