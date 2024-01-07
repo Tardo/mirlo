@@ -1,5 +1,3 @@
-import domAddEventListener from '../utils/dom_add_event_listener.mjs';
-import domRemoveEventListener from '../utils/dom_remove_event_listener.mjs';
 import domGetComponentObj from '../utils/dom_get_component_object';
 import Component from './component.mjs';
 
@@ -27,8 +25,6 @@ class App extends Component {
     Object.values(this.#services).forEach(service => service.destroy());
     this.#services = [];
     this.#observer.disconnect();
-    domRemoveEventListener('click', "[class~='dropdown']");
-    domRemoveEventListener('click', '[data-dismiss]');
   }
 
   registerComponent(name, component) {
@@ -85,18 +81,6 @@ class App extends Component {
       childList: true,
       subtree: true,
     });
-
-    // Assign core event
-    domAddEventListener(
-      'click',
-      "[class~='dropdown']",
-      this.#onCoreClickDropdown.bind(this),
-    );
-    domAddEventListener(
-      'click',
-      '[data-dismiss]',
-      this.#onCoreClickDismiss.bind(this),
-    );
   }
 
   #initializeServices() {
@@ -109,19 +93,31 @@ class App extends Component {
     const service_names = Object.keys(this.#services);
     for (const service_name of service_names) {
       const service = this.#services[service_name];
-      tasks.push(service.onWillStart());
+      tasks.push(service.onInit());
     }
     return Promise.all(tasks);
   }
 
-  #instantiateComponent(name, ...args) {
-    const component_cls = this.getComponentClass(name);
+  async mountComponent(component_name, node) {
+    const component_cls = this.getComponentClass(component_name);
     if (component_cls) {
-      const component = new component_cls(...args);
+      const parent_component = node.closest('[data-component]');
+      const parent_component_obj = domGetComponentObj(parent_component);
+      const component = new component_cls(
+        parent_component_obj || this,
+        node,
+        this.#getNodeComponentOptions(node),
+      );
       this.#assignServices(component);
-      return component.onWillStart().then(() => component.onStart());
+      await component.onWillStart();
+      component.onStart();
+    } else {
+      throw Error(`Can't found the '${component_name}' component!`);
     }
-    return Promise.reject(`Can't found the '${name}' component!`);
+  }
+
+  unmountComponent(node) {
+    domGetComponentObj(node)?.destroy();
   }
 
   #getNodeComponentOptions(dom_el) {
@@ -139,22 +135,11 @@ class App extends Component {
 
   #initializeComponents(nodes) {
     const tasks = [];
-    for (const dom_el of nodes) {
-      if (domGetComponentObj(dom_el)) {
-        continue;
+    nodes.forEach(dom_el => {
+      if (!domGetComponentObj(dom_el)) {
+        tasks.push(this.mountComponent(dom_el.dataset.component, dom_el));
       }
-      const component_name = dom_el.dataset.component;
-      const parent_component = dom_el.closest('[data-component]');
-      const parent_component_obj = domGetComponentObj(parent_component);
-      tasks.push(
-        this.#instantiateComponent(
-          component_name,
-          parent_component_obj || this,
-          dom_el,
-          this.#getNodeComponentOptions(dom_el),
-        ),
-      );
-    }
+    });
     return Promise.all(tasks);
   }
 
@@ -165,22 +150,18 @@ class App extends Component {
   }
 
   #traverseNodeListRemoved(node) {
-    if (node.children) {
-      for (const cnode of node.children) {
-        this.#traverseNodeListRemoved(cnode);
-      }
+    for (const cnode of node.children) {
+      this.#traverseNodeListRemoved(cnode);
     }
-    domGetComponentObj(node)?.onDestroy();
+    domGetComponentObj(node)?.onRemove();
   }
 
   #traverseNodeListAdded(node, node_list) {
-    if (Object.hasOwn(node.dataset, 'component')) {
+    if (node.dataset.component) {
       node_list.push(node);
     }
-    if (node.children) {
-      for (const cnode of node.children) {
-        this.#traverseNodeListAdded(cnode, node_list);
-      }
+    for (const cnode of node.children) {
+      this.#traverseNodeListAdded(cnode, node_list);
     }
   }
 
@@ -212,15 +193,6 @@ class App extends Component {
         this.#processQuededMutations.bind(this),
       );
     }
-  }
-
-  #onCoreClickDropdown(ev) {
-    this.query(ev.currentTarget.dataset.target).classList.toggle('hidden');
-  }
-
-  #onCoreClickDismiss(ev) {
-    const classname = `.${ev.currentTarget.datatset.dismiss}`;
-    ev.currentTarget.closest(classname).remove();
   }
 }
 

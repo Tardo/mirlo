@@ -48,8 +48,8 @@ test('on-fly component initialization', async () => {
   new_div_comp.dataset.component = 'test01';
   new_div.appendChild(new_div_comp);
   document.getElementById('containerC').appendChild(new_div);
-  await new Promise(process.nextTick); // flush promises
   await waitRAF();
+  await new Promise(process.nextTick); // flush promises
   expect(screen.getByText('Hello World!')).toBeVisible();
   expect(screen.getByText('Clicked!')).toBeVisible();
 });

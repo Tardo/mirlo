@@ -21,15 +21,13 @@ export default class {
     this.state = new Proxy(this.#root_state, state_handler);
   }
 
-  onWillStart() {
-    if (
-      Object.keys(this.fetchData).length &&
-      this.useServices.indexOf('requests') === -1
-    ) {
+  async onWillStart() {
+    const fetch_entries = Object.entries(this.fetchData);
+    if (fetch_entries.length && !this.requests) {
       throw Error("Need 'requests' service to use 'fetchData'");
     }
-    return Promise.all(
-      Object.entries(this.fetchData).map(([key, value]) =>
+    return await Promise.all(
+      fetch_entries.map(([key, value]) =>
         this.requests.postJSON(value.endpoint, value.data).then(result => {
           this.data[key] = result;
           return result;
@@ -48,18 +46,8 @@ export default class {
     });
   }
 
-  onDestroy() {
-    this.#childrens = [];
-    for (const cevent in this.events) {
-      const [event_name, ...event_rest] = cevent.split(' ');
-      const event_target = (event_rest && event_rest.join(' ')) || null;
-      const dom_target =
-        (event_target && this.query(event_target)) || this.dom_el;
-      dom_target.removeEventListener(
-        event_name,
-        this.events[cevent].bind(this),
-      );
-    }
+  onRemove() {
+    // Override me
   }
 
   onStateChanged(prop, new_value) {
@@ -89,7 +77,18 @@ export default class {
   }
 
   destroy() {
-    this.dom_el.remove();
+    this.#childrens.forEach(component => component.destroy());
+    this.#childrens = [];
+    for (const cevent in this.events) {
+      const [event_name, ...event_rest] = cevent.split(' ');
+      const event_target = (event_rest && event_rest.join(' ')) || null;
+      const dom_target =
+        (event_target && this.query(event_target)) || this.dom_el;
+      dom_target.removeEventListener(
+        event_name,
+        this.events[cevent].bind(this),
+      );
+    }
   }
 
   /**

@@ -1,9 +1,9 @@
 export default class {
-  onWillStart() {
-    return Promise.resolve();
+  async onInit() {
+    return true;
   }
 
   destroy() {
-    throw Error('Not Implemented!');
+    // Override me
   }
 }

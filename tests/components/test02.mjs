@@ -9,7 +9,7 @@ export class ServiceTest02 extends Service {
 export class Test02 extends Component {
   useServices = ['requests', 'servTest02'];
 
-  onWillStart() {
+  async onWillStart() {
     this.fetchData.ipify = {endpoint: 'https://api.ipify.org/?format=json'};
     return super.onWillStart(...arguments);
   }

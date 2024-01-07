@@ -153,7 +153,7 @@ import {Component} from 'mirlo';
 export default class Demo01 extends Component {
   useServices = ['requests']; // Mandatory due to fetchData usage
 
-  onWillStart() {
+  async onWillStart() {
     this.fetchData.chart = {
       endpoint: '/get_demo01_data',
       data: {
