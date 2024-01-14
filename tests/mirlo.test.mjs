@@ -18,7 +18,7 @@ beforeAll(async () => {
     <div id="testA" data-component="test01"></div>
     <div id="containerB">
       <div id="testB" data-component="test02">
-        <div id="test01-title"></div>
+        <div id="test01_title"></div>
         <div data-component-state-binds="desc-html title-title"></div>
       </div>
     </div>

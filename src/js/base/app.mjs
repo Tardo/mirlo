@@ -136,7 +136,12 @@ class App extends Component {
   #initializeComponents(nodes) {
     const tasks = [];
     nodes.forEach(dom_el => {
-      if (!domGetComponentObj(dom_el)) {
+      const comp = domGetComponentObj(dom_el);
+      if (comp) {
+        if (comp.needUpdateDomChilList()) {
+          comp.updateDomChildList();
+        }
+      } else {
         tasks.push(this.mountComponent(dom_el.dataset.component, dom_el));
       }
     });

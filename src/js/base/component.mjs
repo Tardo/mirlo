@@ -8,6 +8,8 @@ export default class {
   #childrens = [];
   #root_state = {};
   #dom_el = null;
+  #dom_childs = null;
+  #need_update_dom_childs = false;
   state = null;
   events = {};
 
@@ -44,6 +46,18 @@ export default class {
         (event_target && this.query(event_target)) || this.dom_el;
       dom_target.addEventListener(event_name, value.bind(this));
     });
+  }
+
+  updateDomChildList() {
+    this.#dom_childs = {};
+    this.queryAll('[id]').forEach(child => {
+      this.#dom_childs[child.id] = child;
+    });
+    this.#need_update_dom_childs = true;
+  }
+
+  needUpdateDomChilList() {
+    return this.#need_update_dom_childs;
   }
 
   onRemove() {
@@ -120,6 +134,13 @@ export default class {
     this.#dom_el.mirlo = {
       component_obj: this,
     };
+  }
+
+  get dom_childs() {
+    if (!this.#dom_childs) {
+      this.updateDomChildList();
+    }
+    return this.#dom_childs;
   }
 
   get data() {

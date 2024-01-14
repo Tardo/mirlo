@@ -16,8 +16,7 @@ export class Test02 extends Component {
 
   onStart() {
     super.onStart();
-    this.dom_title = this.query('#test01-title');
-    this.dom_title.innerHTML = `<strong>Hello ${this.servTest02.getName()}!</strong>`;
+    this.dom_childs.test01_title.innerHTML = `<strong>Hello ${this.servTest02.getName()}!</strong>`;
     this.state.desc = 'State changed!';
   }
 }
