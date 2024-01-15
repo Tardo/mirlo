@@ -1,6 +1,6 @@
 {
   "name": "mirlo",
-  "version": "0.1.6",
+  "version": "0.2.0",
   "type": "module",
   "keywords": [
     "initiator",
@@ -8,7 +8,7 @@
     "javascript",
     "browser"
   ],
-  "description": "Another Simple JavaScript Initiator",
+  "description": "Another Simple JavaScript WC",
   "main": "./dist/mirlo.mjs",
   "exports": "./dist/mirlo.mjs",
   "repository": {

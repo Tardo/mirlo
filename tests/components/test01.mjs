@@ -2,8 +2,12 @@ import {Component} from '../../dist/mirlo';
 
 export default class Test01 extends Component {
   events = {
-    click: this.#onClick,
+    'click #zoneA,#zoneB': this.#onClick,
   };
+
+  static get observedAttributes() {
+    return ['myval'];
+  }
 
   onRemove() {
     super.onRemove();
@@ -12,10 +16,15 @@ export default class Test01 extends Component {
 
   onStart() {
     super.onStart();
-    this.dom_el.innerHTML = '<strong>Hello World!</strong>';
+    this.getChild('zoneA').innerHTML = '<strong>Hello World!</strong>';
   }
 
-  #onClick() {
-    this.dom_el.innerHTML = '<strong>Clicked!</strong>';
+  #onClick(ev) {
+    if (ev.target.id === 'zoneA') {
+      this.getChild('zoneA').innerHTML = '<strong>Clicked!</strong>';
+    } else if (ev.target.id === 'zoneB') {
+      this.getChild('zoneB').innerHTML =
+        `<strong>Clicked ${this.options.myval}!</strong>`;
+    }
   }
 }

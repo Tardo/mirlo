@@ -1,34 +1,49 @@
 import ComponentStateHandler from './state';
+import app from './app';
 
-export default class {
+export default class extends HTMLElement {
   useServices = [];
+  useStateBinds = [];
   fetchData = {};
   #data = {};
   #parentComponent = null;
-  #childrens = [];
   #root_state = {};
-  #dom_el = null;
-  #dom_childs = null;
-  #need_update_dom_childs = false;
+  #state_binds = {};
+  #sdom = null;
+  options = {};
   state = null;
   events = {};
 
-  constructor(parentComponent, target, options) {
-    this.options = options || {};
-    this.parentComponent = parentComponent;
-    this.dom_el = target;
+  constructor() {
+    super();
+    this.#sdom = this.attachShadow({mode: 'open'});
+    this.mirlo = {};
     const state_handler = Object.assign({}, ComponentStateHandler, {
       component_obj: this,
     });
     this.state = new Proxy(this.#root_state, state_handler);
+    this.renderTemplate();
+  }
+
+  connectedCallback() {
+    this.onWillStart().then(() => this.onStart(...arguments));
+  }
+
+  disconnectedCallback() {
+    this.onRemove(...arguments);
+  }
+
+  attributeChangedCallback() {
+    this.onAttributeChanged(...arguments);
   }
 
   async onWillStart() {
+    app.assignServices(this);
     const fetch_entries = Object.entries(this.fetchData);
     if (fetch_entries.length && !this.requests) {
       throw Error("Need 'requests' service to use 'fetchData'");
     }
-    return await Promise.all(
+    await Promise.all(
       fetch_entries.map(([key, value]) =>
         this.requests.postJSON(value.endpoint, value.data).then(result => {
           this.data[key] = result;
@@ -39,45 +54,58 @@ export default class {
   }
 
   onStart() {
+    // Assign Events
     Object.entries(this.events).forEach(([key, value]) => {
       const [event_name, ...event_rest] = key.split(' ');
       const event_target = (event_rest && event_rest.join(' ')) || null;
-      const dom_target =
-        (event_target && this.query(event_target)) || this.dom_el;
-      dom_target.addEventListener(event_name, value.bind(this));
+      const dom_targets = (event_target && this.queryAll(event_target)) || [
+        this,
+      ];
+      dom_targets.forEach(dom_target =>
+        dom_target.addEventListener(event_name, value.bind(this)),
+      );
     });
-  }
-
-  updateDomChildList() {
-    this.#dom_childs = {};
-    this.queryAll('[id]').forEach(child => {
-      this.#dom_childs[child.id] = child;
-    });
-    this.#need_update_dom_childs = true;
-  }
-
-  needUpdateDomChilList() {
-    return this.#need_update_dom_childs;
   }
 
   onRemove() {
     // Override me
   }
 
-  onStateChanged(prop, new_value) {
+  onAttributeChanged(name, old_value, new_value) {
+    this.options[name] = new_value;
+  }
+
+  onStateChanged(prop, old_value, new_value) {
     const value_typeof = typeof new_value;
-    if (value_typeof === 'string' || value_typeof === 'number') {
-      this.queryAll(`[data-component-state-binds*='${prop}-']`).forEach(
-        dom_el => {
-          dom_el.dataset.componentStateBinds.split(' ').forEach(bind => {
-            const [field, type] = bind.split('-');
-            if (field === prop) {
-              this.constructor.updateStateBind(dom_el, type, new_value);
-            }
-          });
-        },
-      );
+    if (
+      old_value !== new_value &&
+      (value_typeof === 'string' || value_typeof === 'number')
+    ) {
+      this.useStateBinds
+        .filter(x => x.prop === prop)
+        .forEach(bind => {
+          const targets = (bind.selector && this.queryAll(bind.selector)) || [
+            this,
+          ];
+          for (const target of targets) {
+            this.constructor.updateStateBind(target, bind.attribute, new_value);
+          }
+        });
     }
+  }
+
+  renderTemplate() {
+    const template = document.getElementById(
+      `template-${this.tagName.toLowerCase()}`,
+    );
+    if (template) {
+      const node = document.importNode(template.content, true);
+      this.sdom.appendChild(node);
+    }
+  }
+
+  getChild(child_id) {
+    return this.sdom.getElementById(child_id);
   }
 
   static updateStateBind(node, type, value) {
@@ -90,75 +118,18 @@ export default class {
     }
   }
 
-  destroy() {
-    this.#childrens.forEach(component => component.destroy());
-    this.#childrens = [];
-    for (const cevent in this.events) {
-      const [event_name, ...event_rest] = cevent.split(' ');
-      const event_target = (event_rest && event_rest.join(' ')) || null;
-      const dom_target =
-        (event_target && this.query(event_target)) || this.dom_el;
-      dom_target.removeEventListener(
-        event_name,
-        this.events[cevent].bind(this),
-      );
-    }
-  }
-
-  /**
-   * @returns {Component}
-   */
-  get parentComponent() {
-    return this.#parentComponent;
-  }
-
-  set parentComponent(value) {
-    if (this.#parentComponent) {
-      this.#parentComponent.removeChildrenComponent(this);
-    }
-    this.#parentComponent = value;
-    if (this.#parentComponent) {
-      this.#parentComponent.addChildrenComponent(this);
-    }
-  }
-
-  get dom_el() {
-    return this.#dom_el;
-  }
-
-  set dom_el(value) {
-    if (this.#dom_el) {
-      delete this.#dom_el.mirlo;
-    }
-    this.#dom_el = value;
-    this.#dom_el.mirlo = {
-      component_obj: this,
-    };
-  }
-
-  get dom_childs() {
-    if (!this.#dom_childs) {
-      this.updateDomChildList();
-    }
-    return this.#dom_childs;
+  get sdom() {
+    return this.#sdom;
   }
 
   get data() {
     return this.#data;
   }
 
-  addChildrenComponent(component) {
-    this.#childrens.push(component);
-  }
-
-  removeChildrenComponent(component) {
-    this.#childrens = this.#childrens.filter(item => item !== component);
-  }
-
   queryAll(selector) {
-    return this.dom_el.querySelectorAll(selector);
+    return this.sdom.querySelectorAll(selector);
   }
   query(selector) {
-    return this.dom_el.querySelector(selector);
+    return this.shadowRoot.querySelector(selector);
   }
 }

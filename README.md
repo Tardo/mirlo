@@ -1,7 +1,7 @@
 <h1 align="center">
   <img src="mirlo.png" />
   <div>Mirlo</div>
-  <div>- Another Simple JavaScript Initiator -</div>
+  <div>- Another Simple JavaScript WC -</div>
 </h1>
 
 ## Installation
@@ -15,7 +15,11 @@ npm i mirlo
 - HTML:
 
 ```html
-<div id="demoA" data-component="demo01"></div>
+<template id="template-mirlo-demo01">
+  <span id="msg"></span>
+</template>
+
+<mirlo-demo01 id="demo"></mirlo-demo01>
 ```
 
 - JS 'Component':
@@ -25,16 +29,16 @@ import {Component} from 'mirlo';
 
 export default class Demo01 extends Component {
   events = {
-    click: this.#onClick,
+    'click #msg': this.#onClickMessage,
   };
 
   onStart() {
     super.onStart();
-    this.dom_el.innerHTML = '<strong>Hello World!</strong>';
+    this.getChild('msg').innerHTML = '<strong>Hello World!</strong>';
   }
 
-  #onClick() {
-    this.dom_el.innerHTML = '<strong>Clicked!</strong>';
+  #onClickMessage() {
+    this.getChild('msg').innerHTML = '<strong>Clicked!</strong>';
   }
 }
 ```
@@ -71,7 +75,7 @@ export default class Demo01 extends Component {
   onStart() {
     super.onStart();
     const username = this.localStorage.getItem('username');
-    this.dom_el.innerHTML = `<strong>Hello ${username}!</strong>`;
+    this.getChild('msg').innerHTML = `<strong>Hello ${username}!</strong>`;
   }
 }
 ```
@@ -100,7 +104,8 @@ export default class Demo01 extends Component {
 
   onStart() {
     super.onStart();
-    this.dom_el.innerHTML = `<strong>Hello ${this.myService.getUsername()}!</strong>`;
+    this.getChild('msg').innerHTML =
+      `<strong>Hello ${this.myService.getUsername()}!</strong>`;
   }
 }
 ```
@@ -166,7 +171,7 @@ export default class Demo01 extends Component {
 
   onStart() {
     super.onStart();
-    this.dom_el.innerHTML = this.data.chart.response_value_a;
+    this.getChild('msg').innerHTML = this.data.chart.response_value_a;
   }
 }
 ```
@@ -175,14 +180,20 @@ export default class Demo01 extends Component {
 
 ## State Binds
 
-- HTML
+JS 'Component':
 
-```html
-<div
-  id="demoA"
-  data-component="demo01"
-  data-component-state-binds="desc-html title-title"
-></div>
+```javascript
+import {Component} from 'mirlo';
+
+export default class Demo01 extends Component {
+  useStateBinds = [
+    {
+      prop: 'msg',
+      attribute: 'html',
+      selector: '#msg',
+    },
+  ];
+}
 ```
 
 - JS 'Main':
@@ -190,9 +201,5 @@ export default class Demo01 extends Component {
 ```javascript
 import app from 'mirlo';
 
-const component_obj = app.getComponentById('demoA');
-Object.assign(component_obj.state, {
-  desc: '<i>State changed!</i>',
-  title: 'New Title',
-});
+app.getElementById('demoA').state.msg = '<i>State changed!</i>';
 ```

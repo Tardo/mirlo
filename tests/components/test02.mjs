@@ -8,6 +8,18 @@ export class ServiceTest02 extends Service {
 
 export class Test02 extends Component {
   useServices = ['requests', 'servTest02'];
+  useStateBinds = [
+    {
+      prop: 'desc',
+      attribute: 'html',
+      selector: '#test01_title',
+    },
+    {
+      prop: 'title',
+      attribute: 'title',
+      selector: '#test02_title',
+    },
+  ];
 
   async onWillStart() {
     this.fetchData.ipify = {endpoint: 'https://api.ipify.org/?format=json'};
@@ -16,7 +28,7 @@ export class Test02 extends Component {
 
   onStart() {
     super.onStart();
-    this.dom_childs.test01_title.innerHTML = `<strong>Hello ${this.servTest02.getName()}!</strong>`;
-    this.state.desc = 'State changed!';
+    this.getChild('test01_title').innerHTML =
+      `<strong>Hello ${this.servTest02.getName()}!</strong>`;
   }
 }
