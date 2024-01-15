@@ -199,7 +199,5 @@ export default class Demo01 extends Component {
 - JS 'Main':
 
 ```javascript
-import app from 'mirlo';
-
-app.getElementById('demoA').state.msg = '<i>State changed!</i>';
+document.getElementById('demoA').state.msg = '<i>State changed!</i>';
 ```
