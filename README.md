@@ -54,10 +54,10 @@ export default class Demo01 extends Component {
 - JS 'Main':
 
 ```javascript
-import app from 'mirlo';
+import {registerComponent} from 'mirlo';
 import Demo01 from './components/demo01';
 
-app.registerComponent('demo01', Demo01);
+registerComponent('demo01', Demo01);
 ```
 
 ---
@@ -117,12 +117,12 @@ export default class Demo01 extends Component {
 - JS 'Main':
 
 ```javascript
-import app from 'mirlo';
+import {registerService, registerComponent} from 'mirlo';
 import Demo01 from './components/demo01';
 import MyService from './serices/myservice';
 
-app.registerService('myService', MyService);
-app.registerComponent('demo01', Demo01);
+registerService('myService', MyService);
+registerComponent('demo01', Demo01);
 ```
 
 ## Extend Built-in Services
@@ -150,10 +150,10 @@ export default class MyRequestsService extends RequestsService {
 - JS 'Main':
 
 ```javascript
-import app from 'mirlo';
+import {registerService} from 'mirlo';
 import MyRequestsService from './serices/myrequestsservice';
 
-app.registerService('requests', MyRequestsService, true);
+registerService('requests', MyRequestsService, true);
 ```
 
 ---
