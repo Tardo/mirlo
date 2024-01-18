@@ -28,17 +28,25 @@ npm i mirlo
 import {Component} from 'mirlo';
 
 export default class Demo01 extends Component {
-  events = {
-    'click #msg': this.#onClickMessage,
-  };
+  onSetup() {
+    Component.useEvents({
+      msg: [
+        {
+          event: 'click',
+          callback: this.onClickMessage,
+          mode: 'id',
+        },
+      ],
+    });
+  }
 
   onStart() {
     super.onStart();
-    this.getChild('msg').innerHTML = '<strong>Hello World!</strong>';
+    this.queryId('msg').innerHTML = '<strong>Hello World!</strong>';
   }
 
-  #onClickMessage() {
-    this.getChild('msg').innerHTML = '<strong>Clicked!</strong>';
+  onClickMessage(ev) {
+    ev.target.innerHTML = '<strong>Clicked!</strong>';
   }
 }
 ```
@@ -67,15 +75,13 @@ app.registerComponent('demo01', Demo01);
 - JS 'Component':
 
 ```javascript
-import {Component} from 'mirlo';
+import {Component, getService} from 'mirlo';
 
 export default class Demo01 extends Component {
-  useServices = ['localStorage'];
-
   onStart() {
     super.onStart();
-    const username = this.localStorage.getItem('username');
-    this.getChild('msg').innerHTML = `<strong>Hello ${username}!</strong>`;
+    const username = getService('localStorage').getItem('username');
+    this.queryId('msg').innerHTML = `<strong>Hello ${username}!</strong>`;
   }
 }
 ```
@@ -100,12 +106,10 @@ export default class MyService extends Service {
 import {Component} from 'mirlo';
 
 export default class Demo01 extends Component {
-  useServices = ['myService'];
-
   onStart() {
     super.onStart();
-    this.getChild('msg').innerHTML =
-      `<strong>Hello ${this.myService.getUsername()}!</strong>`;
+    this.queryId('msg').innerHTML =
+      `<strong>Hello ${getService('myService').getUsername()}!</strong>`;
   }
 }
 ```
@@ -129,9 +133,15 @@ app.registerComponent('demo01', Demo01);
 import {RequestsService} from 'mirlo';
 
 export default class MyRequestsService extends RequestsService {
+  onInit() {
+    super().onInit(...arguments);
+    this.user_info = {
+      csrftoken: 'ABC123',
+    };
+  }
   getHeaders(custom_headers) {
-    return defaults(custom_headers, {
-      'X-CSRFToken': requestInfo.csrftoken,
+    return Object.assign(custom_headers, {
+      'X-CSRFToken': this.user_info.csrftoken,
     });
   }
 }
@@ -156,22 +166,19 @@ app.registerService('requests', MyRequestsService, true);
 import {Component} from 'mirlo';
 
 export default class Demo01 extends Component {
-  useServices = ['requests']; // Mandatory due to fetchData usage
-
-  async onWillStart() {
-    this.fetchData.chart = {
+  onSetup() {
+    Component.useFetchData({
       endpoint: '/get_demo01_data',
       data: {
         valueA: 'this is a test!',
         valueB: 42,
       },
-    };
-    return super.onWillStart(...arguments);
+    });
   }
 
   onStart() {
     super.onStart();
-    this.getChild('msg').innerHTML = this.data.chart.response_value_a;
+    this.queryId('msg').innerHTML = this.netdata.chart.response_value_a;
   }
 }
 ```
@@ -186,13 +193,14 @@ JS 'Component':
 import {Component} from 'mirlo';
 
 export default class Demo01 extends Component {
-  useStateBinds = [
-    {
-      prop: 'msg',
-      attribute: 'html',
-      selector: '#msg',
-    },
-  ];
+  onSetup() {
+    Component.useStateBinds({
+      msg: {
+        attribute: 'html',
+        id: 'msg',
+      },
+    });
+  }
 }
 ```
 

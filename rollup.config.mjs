@@ -25,8 +25,8 @@ export default [
       alias({
         entries: [
           {
-            find: '@css',
-            replacement: path.resolve('src/css'),
+            find: '@mirlo',
+            replacement: path.resolve('src/js'),
           },
         ],
       }),

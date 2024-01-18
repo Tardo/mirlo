@@ -1,17 +1,18 @@
 /* global process */
-import app from '../dist/mirlo';
+import {registerService, registerComponent} from '../dist/mirlo';
 import Test01 from './components/test01';
 import {ServiceTest02, Test02} from './components/test02';
 import {mockFetch} from './mocks';
 
+const waitRAF = () => new Promise(resolve => requestAnimationFrame(resolve));
 const MAX_COMPONENTS = 2000;
 
 beforeAll(async () => {
   window.fetch = mockFetch({ip: '127.0.0.1'});
 
-  app.registerService('servTest02', ServiceTest02);
-  app.registerComponent('test01', Test01);
-  app.registerComponent('test02', Test02);
+  registerService('servTest02', ServiceTest02);
+  registerComponent('test01', Test01);
+  registerComponent('test02', Test02);
   document.body.innerHTML = `
     <template id="template-mirlo-test01">
       <span id="zoneA"></span>
@@ -33,13 +34,13 @@ beforeAll(async () => {
 test('load component', () => {
   const dom_el_comp = document.body.querySelector('#testA');
   expect(dom_el_comp).not.toBeNull();
-  const dom_el_comp_span = dom_el_comp.getChild('zoneA');
+  const dom_el_comp_span = dom_el_comp.queryId('zoneA');
   expect(dom_el_comp_span.textContent).toBe('Hello World!');
 });
 
 test('click component', () => {
   const dom_el_comp = document.body.querySelector('#testA');
-  const dom_el_comp_span = dom_el_comp.getChild('zoneA');
+  const dom_el_comp_span = dom_el_comp.queryId('zoneA');
   expect(dom_el_comp_span.textContent).not.toBe('Clicked!');
   dom_el_comp_span.click();
   expect(dom_el_comp_span.textContent).toBe('Clicked!');
@@ -55,7 +56,7 @@ test('on-fly component initialization', async () => {
   await new Promise(process.nextTick); // flush promises
   const dom_el_comp = document.body.querySelector('#test_comp_rmv');
   expect(dom_el_comp).not.toBeNull();
-  const dom_el_comp_span = dom_el_comp.getChild('zoneA');
+  const dom_el_comp_span = dom_el_comp.queryId('zoneA');
   expect(dom_el_comp_span.textContent).toBe('Hello World!');
 });
 
@@ -89,23 +90,27 @@ test(`remove component performance [${MAX_COMPONENTS} components]`, async () => 
 test('custom service', () => {
   const dom_el_comp = document.body.querySelector('#testB');
   expect(dom_el_comp).not.toBeNull();
-  const dom_el_comp_div = dom_el_comp.getChild('test01_title');
-  expect(dom_el_comp_div.textContent).toBe('Hello Test!');
+  const dom_el_comp_div = dom_el_comp.queryId('test01_title');
+  expect(dom_el_comp_div.textContent).toBe('Hello Test! (127.0.0.1)');
 });
 
-test('component state', () => {
+test('component state', async () => {
   const dom_el_comp = document.body.querySelector('#testB');
-  const dom_el_comp_div = dom_el_comp.getChild('test01_title');
-  expect(dom_el_comp_div.textContent).toBe('Hello Test!');
-  dom_el_comp.state.desc = 'State rechanged!';
+  const dom_el_comp_div = dom_el_comp.queryId('test01_title');
+  expect(dom_el_comp_div.textContent).toBe('Hello Test! (127.0.0.1)');
+  dom_el_comp.mirlo.state.desc = 'State rechanged!';
+  await waitRAF();
   expect(dom_el_comp_div.textContent).toBe('State rechanged!');
-  const dom_el_comp_div_b = dom_el_comp.getChild('test02_title');
+  const dom_el_comp_div_b = dom_el_comp.queryId('test02_title');
   expect(dom_el_comp_div_b.getAttribute('title')).toBeNull();
-  dom_el_comp.state.title = 'The title';
+  dom_el_comp.mirlo.state.title = 'The title';
+  dom_el_comp.mirlo.state.desc = 'State rechanged 2!';
+  await waitRAF();
   expect(dom_el_comp_div_b.getAttribute('title')).toBe('The title');
+  expect(dom_el_comp_div.textContent).toBe('State rechanged 2!');
 });
 
 test('component fetch data', () => {
   const componentTestB = document.getElementById('testB');
-  expect(componentTestB.data.ipify.ip).toBe('127.0.0.1');
+  expect(componentTestB.netdata.ipify.ip).toBe('127.0.0.1');
 });

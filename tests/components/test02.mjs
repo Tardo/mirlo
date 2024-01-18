@@ -1,4 +1,4 @@
-import {Component, Service} from '../../dist/mirlo';
+import {Component, Service, getService} from '../../dist/mirlo';
 
 export class ServiceTest02 extends Service {
   getName() {
@@ -7,28 +7,29 @@ export class ServiceTest02 extends Service {
 }
 
 export class Test02 extends Component {
-  useServices = ['requests', 'servTest02'];
-  useStateBinds = [
-    {
-      prop: 'desc',
-      attribute: 'html',
-      selector: '#test01_title',
-    },
-    {
-      prop: 'title',
-      attribute: 'title',
-      selector: '#test02_title',
-    },
-  ];
+  onSetup() {
+    Component.useStateBinds({
+      desc: {
+        attribute: 'html',
+        id: 'test01_title',
+      },
+      title: {
+        attribute: 'title',
+        id: 'test02_title',
+      },
+    });
+    Component.useFetchData({
+      ipify: {endpoint: 'https://api.ipify.org/?format=json'},
+    });
+  }
 
   async onWillStart() {
-    this.fetchData.ipify = {endpoint: 'https://api.ipify.org/?format=json'};
     return super.onWillStart(...arguments);
   }
 
   onStart() {
     super.onStart();
-    this.getChild('test01_title').innerHTML =
-      `<strong>Hello ${this.servTest02.getName()}!</strong>`;
+    this.queryId('test01_title').innerHTML =
+      `<strong>Hello ${getService('servTest02').getName()}! (${this.netdata.ipify.ip})</strong>`;
   }
 }

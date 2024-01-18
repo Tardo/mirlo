@@ -1,11 +1,11 @@
-import Service from '../base/service';
+import Service from '@mirlo/base/service';
 
 export const METHOD = {
   POST: 'POST',
   GET: 'GET',
 };
 
-export default class RequestsService extends Service {
+export default class extends Service {
   MESSAGES = {
     e200: '200: Invalid server result!',
   };

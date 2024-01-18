@@ -1,49 +1,43 @@
-/** Boot Mirlo **/
-class App {
-  #registry = {
-    components: {},
-    services: {},
-  };
-  #services = {};
+const registry = {
+  components: {},
+  services: {},
+};
+const services = {};
 
-  registerComponent(name, component) {
-    if (Object.hasOwn(this.#registry.components, name)) {
-      console.warn(`Already exists a component called '${name}'!`);
-      return;
-    }
-    this.#registry.components[name] = component;
-    customElements.define(`mirlo-${name}`, component);
-  }
-  getComponentClass(name) {
-    return this.#registry.components[name];
-  }
+// COMPONENTS
 
-  registerService(name, service, force = false) {
-    if (Object.hasOwn(this.#registry.services, name) && !force) {
-      console.warn(`Already exists a service called '${name}'!`);
-      return;
-    }
-    this.#registry.services[name] = service;
-    this.#initializeService(name);
+export function registerComponent(name, component) {
+  if (Object.hasOwn(registry.components, name)) {
+    console.warn(`Already exists a component called '${name}'!`);
+    return;
   }
-  getServiceClass(name) {
-    return this.#registry.services[name];
-  }
-  getService(name) {
-    return this.#services[name];
-  }
-
-  #initializeService(service_name) {
-    this.#services[service_name] = new this.#registry.services[service_name]();
-    const service = this.#services[service_name];
-    return service.onInit();
-  }
-
-  assignServices(component) {
-    for (const service_name of component.useServices) {
-      component[service_name] = this.#services[service_name];
-    }
-  }
+  registry.components[name] = component;
+  customElements.define(`mirlo-${name}`, component);
 }
 
-export default new App();
+export function getComponentClass(name) {
+  return registry.components[name];
+}
+
+// SERVICES
+
+function initializeService(service_name) {
+  services[service_name] = new registry.services[service_name]();
+  const service = services[service_name];
+  return service.onInit();
+}
+
+export function registerService(name, service, force = false) {
+  if (Object.hasOwn(registry.services, name) && !force) {
+    console.warn(`Already exists a service called '${name}'!`);
+    return;
+  }
+  registry.services[name] = service;
+  initializeService(name);
+}
+export function getServiceClass(name) {
+  return registry.services[name];
+}
+export function getService(name) {
+  return services[name];
+}

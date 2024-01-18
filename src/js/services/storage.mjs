@@ -1,11 +1,11 @@
-import Service from '../base/service';
+import Service from '@mirlo/base/service';
 
 export class StorageService extends Service {
   storage = null;
 
-  getItem(item) {
+  getItem(item, def_value) {
     return (
-      (this.storage && JSON.parse(this.storage.getItem(item))) || undefined
+      (this.storage && JSON.parse(this.storage.getItem(item))) || def_value
     );
   }
 
@@ -13,14 +13,8 @@ export class StorageService extends Service {
     try {
       return this.storage.setItem(item, JSON.stringify(value));
     } catch (err) {
-      console.error(
-        `[StorageService] Can't set the item '${item}' = '${value}'`,
-      );
       if (on_error) {
-        const err_check = this.#isQuotaExceededError(err);
-        if (err_check) {
-          on_error(err);
-        }
+        on_error(err);
       }
     }
 
@@ -29,10 +23,6 @@ export class StorageService extends Service {
 
   removeItem(item) {
     return (this.storage && this.storage.removeItem(item)) || undefined;
-  }
-
-  #isQuotaExceededError(err) {
-    return err.name === 'QuotaExceededError';
   }
 }
 

@@ -1,9 +1,24 @@
 import {Component} from '../../dist/mirlo';
 
 export default class Test01 extends Component {
-  events = {
-    'click #zoneA,#zoneB': this.#onClick,
-  };
+  onSetup() {
+    Component.useEvents({
+      zoneA: [
+        {
+          event: 'click',
+          callback: this.onClick,
+          mode: 'id',
+        },
+      ],
+      zoneB: [
+        {
+          event: 'click',
+          callback: this.onClick,
+          mode: 'id',
+        },
+      ],
+    });
+  }
 
   static get observedAttributes() {
     return ['myval'];
@@ -16,15 +31,14 @@ export default class Test01 extends Component {
 
   onStart() {
     super.onStart();
-    this.getChild('zoneA').innerHTML = '<strong>Hello World!</strong>';
+    this.queryId('zoneA').innerHTML = '<strong>Hello World!</strong>';
   }
 
-  #onClick(ev) {
+  onClick(ev) {
     if (ev.target.id === 'zoneA') {
-      this.getChild('zoneA').innerHTML = '<strong>Clicked!</strong>';
+      ev.target.innerHTML = '<strong>Clicked!</strong>';
     } else if (ev.target.id === 'zoneB') {
-      this.getChild('zoneB').innerHTML =
-        `<strong>Clicked ${this.options.myval}!</strong>`;
+      ev.target.innerHTML = `<strong>Clicked ${this.options.myval}!</strong>`;
     }
   }
 }
