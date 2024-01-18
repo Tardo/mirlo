@@ -30,13 +30,12 @@ import {Component} from 'mirlo';
 export default class Demo01 extends Component {
   onSetup() {
     Component.useEvents({
-      msg: [
-        {
-          event: 'click',
-          callback: this.onClickMessage,
-          mode: 'id',
+      msg: {
+        mode: 'id',
+        events: {
+          click: this.onClickMessage,
         },
-      ],
+      },
     });
   }
 

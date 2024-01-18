@@ -69,19 +69,22 @@ export default class extends HTMLElement {
   onStart() {
     // Assign Events
     if (this.mirlo._events) {
-      Object.entries(this.mirlo._events).forEach(([selector, events_def]) => {
-        events_def.forEach(({event, callback, mode}) => {
-          const callback_bind = callback.bind(this);
-          if (selector) {
-            if (mode === 'id') {
-              this.queryId(selector).addEventListener(event, callback_bind);
-            } else {
-              this.queryAll(selector).forEach(dom_target =>
-                dom_target.addEventListener(event, callback_bind),
-              );
-            }
+      Object.entries(this.mirlo._events).forEach(([selector, event_def]) => {
+        const {mode, events} = event_def;
+        let dom_targets;
+        if (selector) {
+          if (mode === 'id') {
+            dom_targets = [this.queryId(selector)];
           } else {
-            this.addEventListener(event, callback_bind);
+            dom_targets = this.queryAll(selector);
+          }
+        } else {
+          dom_targets = [this];
+        }
+        Object.entries(events).forEach(([ename, callback]) => {
+          const callback_bind = callback.bind(this);
+          for (const dom_target of dom_targets) {
+            dom_target.addEventListener(ename, callback_bind);
           }
         });
       });
@@ -109,7 +112,7 @@ export default class extends HTMLElement {
         } else if (bind.selector) {
           targets = [this.query(bind.selector)];
         } else if (bind.selectorAll) {
-          targets = this.queryAll(bind.selectorAll);
+          targets = Array.from(this.queryAll(bind.selectorAll));
         } else {
           targets = [this];
         }

@@ -3,20 +3,18 @@ import {Component} from '../../dist/mirlo';
 export default class Test01 extends Component {
   onSetup() {
     Component.useEvents({
-      zoneA: [
-        {
-          event: 'click',
-          callback: this.onClick,
-          mode: 'id',
+      zoneA: {
+        mode: 'id',
+        events: {
+          click: this.onClick,
         },
-      ],
-      zoneB: [
-        {
-          event: 'click',
-          callback: this.onClick,
-          mode: 'id',
+      },
+      zoneB: {
+        mode: 'id',
+        events: {
+          click: this.onClick,
         },
-      ],
+      },
     });
   }
 
