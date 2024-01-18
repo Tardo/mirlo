@@ -134,7 +134,7 @@ import {RequestsService} from 'mirlo';
 
 export default class MyRequestsService extends RequestsService {
   onInit() {
-    super().onInit(...arguments);
+    super.onInit(...arguments);
     this.user_info = {
       csrftoken: 'ABC123',
     };
