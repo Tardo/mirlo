@@ -1,5 +1,3 @@
-// Copyright (C) 2024 Alexandre D. Díaz
-
 // Base
 import {
   registerComponent,

@@ -1,14 +1,52 @@
 import ComponentStateBinderHandler from './state';
 import {getService} from './app';
 
+/**
+ * The active component.
+ * @private
+ */
 let active_component = null;
 
-export default class extends HTMLElement {
+/**
+ * Class representing a Component node.
+ * @extends HTMLElement
+ */
+class Component extends HTMLElement {
+  /**
+   * The root state.
+   * @type {(Object|Proxy)}
+   * @private
+   */
   #root_state = {};
+  /**
+   * The queue of the state binds changes.
+   * @type {Array}
+   * @private
+   */
   #queue_state_changes = [];
+  /**
+   * The rAF handler for state binds changes.
+   * @type {Number}
+   * @private
+   */
   #queue_state_raf = null;
+  /**
+   * The Shadow Root of the node
+   * @type {NodeList}
+   * @private
+   */
   #sdom = null;
+  /**
+   * The store of fetchData.
+   * @type Object
+   * @private
+   */
   #netdata = {};
+  /**
+   * The object for mirlo purpuoses.
+   * @type {Object}
+   * @property {Object} options - The component options.
+   */
   mirlo = {
     options: {},
     _events: null,
@@ -16,6 +54,9 @@ export default class extends HTMLElement {
     _state_binds: null,
   };
 
+  /**
+   * Create a Component node.
+   */
   constructor() {
     super();
     this.#sdom = this.attachShadow({mode: 'closed'});
@@ -25,22 +66,41 @@ export default class extends HTMLElement {
     active_component = null;
   }
 
+  /**
+   * Invoked when the component node is attached to the page.
+   * @private
+   */
   connectedCallback() {
     this.onWillStart().then(() => this.onStart(...arguments));
   }
 
+  /**
+   * Invoked when the component node is dettached from the page.
+   * @private
+   */
   disconnectedCallback() {
     this.onRemove(...arguments);
   }
 
+  /**
+   * Invoked when the component node change the attributes.
+   * @private
+   */
   attributeChangedCallback() {
     this.onAttributeChanged(...arguments);
   }
 
+  /**
+   * Invoked when the component is allocated. Use this method to call 'Hook Functions' and configure the component.
+   */
   onSetup() {
     // Override me
   }
 
+  /**
+   * Invoked when the component is attached to the page. Used to call promises and wait for them before full initialization.
+   * @returns {Promise}
+   */
   onWillStart() {
     if (this.mirlo._state_binds) {
       const state_handler = Object.assign({}, ComponentStateBinderHandler, {
@@ -66,6 +126,9 @@ export default class extends HTMLElement {
     return Promise.resolve();
   }
 
+  /**
+   * Invoked when 'onWillStart' promise finish. Here you can manipulate the component node.
+   */
   onStart() {
     // Assign Events
     if (this.mirlo._events) {
@@ -91,14 +154,29 @@ export default class extends HTMLElement {
     }
   }
 
+  /**
+   * Invoked when the component is removed from the page.
+   */
   onRemove() {
     // Override me
   }
 
+  /**
+   * Invoked when the component changes an attribute.
+   * @param {string} name - The attribute name.
+   * @param {string} old_value - The old value.
+   * @param {string} new_value - The new value.
+   */
   onAttributeChanged(name, old_value, new_value) {
     this.mirlo.options[name] = new_value;
   }
 
+  /**
+   * Invoked when the component state change.
+   * @param {string} prop - The property name.
+   * @param {any} old_value - The old value.
+   * @param {any} new_value - The new value.
+   */
   onStateChanged(prop, old_value, new_value) {
     if (
       old_value !== new_value &&
@@ -130,6 +208,10 @@ export default class extends HTMLElement {
     }
   }
 
+  /**
+   * Process the queue of the state binds changes.
+   * @private
+   */
   #queueStateFlush() {
     this.#queue_state_changes.forEach(([target, attribute, value]) =>
       this.constructor.updateStateBind(target, attribute, value),
@@ -138,6 +220,10 @@ export default class extends HTMLElement {
     this.#queue_state_raf = null;
   }
 
+  /**
+   * Render the associated template.
+   * A template is created using the node 'template' with an 'id' like "template-mirlo-<component name>".
+   */
   #renderTemplate() {
     const template = document.getElementById(
       `template-${this.tagName.toLowerCase()}`,
@@ -147,6 +233,12 @@ export default class extends HTMLElement {
     }
   }
 
+  /**
+   * Update the node with the state bind change.
+   * @param {HTMLElement} node - The node.
+   * @param {string} attr - The attribute name.
+   * @param {string} value - The value.
+   */
   static updateStateBind(node, attr, value) {
     if (!attr) {
       node.textContent = value;
@@ -157,6 +249,12 @@ export default class extends HTMLElement {
     }
   }
 
+  /**
+   * Gets the active allocated component.
+   * @returns {Component}
+   * @throws Will throw an error if the method is called outside allocation time.
+   * @private
+   */
   static #getActiveComponent() {
     if (!active_component) {
       throw new Error(
@@ -166,36 +264,75 @@ export default class extends HTMLElement {
     return active_component;
   }
 
+  /**
+   * Configure component events.
+   * @throws Will throw an error if the method is called outside allocation time.
+   */
   static useEvents(event_defs) {
     const comp = this.#getActiveComponent();
     comp.mirlo._events = event_defs;
   }
 
+  /**
+   * Configure component fetch data.
+   * @throws Will throw an error if the method is called outside allocation time.
+   */
   static useFetchData(fetch_defs) {
     const comp = this.#getActiveComponent();
     comp.mirlo._fetch_data = fetch_defs;
   }
 
+  /**
+   * Configure component state binds.
+   * @throws Will throw an error if the method is called outside allocation time.
+   */
   static useStateBinds(state_defs) {
     const comp = this.#getActiveComponent();
     comp.mirlo._state_binds = state_defs;
   }
 
+  /**
+   * Shadow Root.
+   * @type {ShadowRoot}
+   */
   get sdom() {
     return this.#sdom;
   }
 
+  /**
+   * Fetch data results.
+   * @type {Object}
+   */
   get netdata() {
     return this.#netdata;
   }
 
+  /**
+   * Query all nodes using an CSS selector.
+   * @param {string} selector - The CSS selector.
+   * @returns {NodeList}
+   */
   queryAll(selector) {
     return this.#sdom.querySelectorAll(selector);
   }
+
+  /**
+   * Query a node using an CSS selector.
+   * @param {string} selector - The CSS selector.
+   * @returns {HTMLElement}
+   */
   query(selector) {
     return this.#sdom.querySelector(selector);
   }
+
+  /**
+   * Query a node using its id.
+   * @param {string} el_id - The id of the node.
+   * @returns {HTMLElement}
+   */
   queryId(el_id) {
     return this.#sdom.getElementById(el_id);
   }
 }
+
+export default Component;

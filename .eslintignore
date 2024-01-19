@@ -2,6 +2,7 @@ node_modules
 .github
 .husky
 dist
+docs
 *.code-workspace
 *.lock
 *.toml

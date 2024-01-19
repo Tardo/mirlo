@@ -4,6 +4,7 @@ examples/
 node_modules/
 src/
 tests/
+docs/
 .editorconfig
 .eslintignore
 .prettierignore
@@ -12,3 +13,4 @@ mirlo.png
 package-lock.json
 rollup.config.mjs
 setup-jest.mjs
+jsdoc.json

@@ -43,8 +43,5 @@ jobs:
       - name: eslint
         run: npx eslint --color .
 
-      - name: Build dist/ files
-        run: npm run build
-
       - name: Run Tests
         run: npm run test

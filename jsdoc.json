@@ -1,0 +1,30 @@
+{
+  "tags": {
+    "allowUnknownTags": false
+  },
+  "sourceType": "module",
+  "source": {
+    "include": ["src/js", "package.json", "README.md"],
+    "includePattern": "\\.mjs$",
+    "excludePattern": "(node_modules/|docs)"
+  },
+  "plugins": ["plugins/markdown"],
+  "opts": {
+    "encoding": "utf8",
+    "destination": "docs/",
+    "recurse": true,
+    "verbose": true,
+    "template": "node_modules/clean-jsdoc-theme",
+    "theme_opts": {
+      "default_theme": "dark"
+    }
+  },
+  "templates": {
+    "cleverLinks": false,
+    "monospaceLinks": false
+  },
+  "markdown": {
+    "hardwrap": false,
+    "idInHeadings": true
+  }
+}
