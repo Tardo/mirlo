@@ -4,9 +4,12 @@
   <div>- Another Simple JavaScript WC -</div>
 </h1>
 
-<p align="center">
-![Static Badge](https://img.shields.io/badge/JSDoc-Page-33A2FF?link=https%3A%2F%2Ftardo.github.io%2Fmirlo%2F) [![Tests](https://github.com/Tardo/mirlo/actions/workflows/tests.yml/badge.svg)](https://github.com/Tardo/mirlo/actions/workflows/tests.yml)
-</p>
+<h2 align="center">
+
+![Static Badge](https://img.shields.io/badge/JSDoc-Page-33A2FF?link=https%3A%2F%2Ftardo.github.io%2Fmirlo%2F)
+[![Tests](https://github.com/Tardo/mirlo/actions/workflows/tests.yml/badge.svg)](https://github.com/Tardo/mirlo/actions/workflows/tests.yml)
+
+</h2>
 
 ## Installation
 
