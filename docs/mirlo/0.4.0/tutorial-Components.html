@@ -32,9 +32,9 @@ registerComponent('demo', Component);
   }
 }
 </code></pre><p>Example:</p><pre class="prettyprint source lang-javascript"><code>Component.useEvents({
-  &quot;.tab&quot;: {
+  '.tab': {
     click: this.onClickTab,
-  }
+  },
 });
 </code></pre></li><li><p><code>useFetchData()</code> -&gt; Configure component prefetched network data.</p><p>The function receives an object with the following scheme:</p><pre class="prettyprint source"><code>{
   &lt;CUSTOM NAME>: {
@@ -60,9 +60,7 @@ registerComponent('demo', Component);
   },
 });
 </code></pre></li><li><p><code>useStyles()</code> -&gt; Configure component styles.</p><p>The function receives an array of strings with the location of the css resources:</p><pre class="prettyprint source"><code>[&lt;Strings>]
-</code></pre><p>Example:</p><pre class="prettyprint source lang-javascript"><code>Component.useStyles([
-  '/static/css/mycomponent.css',
-]);
+</code></pre><p>Example:</p><pre class="prettyprint source lang-javascript"><code>Component.useStyles(['/static/css/mycomponent.css']);
 </code></pre></li><li><p><code>enableAnimation()</code> -&gt; Enable component animation mode.</p></li><li><p><code>disableShadow()</code> -&gt; Disable Shadow DOM usage.</p></li></ul><h3 id="create-an-animated-component">Create an animated component</h3><pre class="prettyprint source lang-javascript"><code>import {Component, registerComponent} from 'mirlo';
 
 class DemoAnimated extends Component {

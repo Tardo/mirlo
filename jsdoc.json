@@ -15,6 +15,7 @@
     "recurse": true,
     "verbose": true,
     "template": "node_modules/clean-jsdoc-theme",
+    "tutorials": "tutorials/",
     "theme_opts": {
       "default_theme": "dark"
     }

@@ -38,7 +38,7 @@
     "watch": "rollup -c -w",
     "build": "rollup -c",
     "test": "npm run build && node --experimental-vm-modules node_modules/.bin/jest",
-    "generate-docs": "jsdoc -u ./tutorials -c jsdoc.json"
+    "generate-docs": "jsdoc -c jsdoc.json"
   },
   "devDependencies": {
     "@rollup/plugin-alias": "^5.0.1",
