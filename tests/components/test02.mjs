@@ -30,6 +30,6 @@ export class Test02 extends Component {
   onStart() {
     super.onStart();
     this.queryId('test01_title').innerHTML =
-      `<strong>Hello ${getService('servTest02').getName()}! (${this.netdata.ipify.ip})</strong>`;
+      `<strong>Hello ${getService('servTest02').getName()}! (${this.getFetchData('ipify').ip})</strong>`;
   }
 }

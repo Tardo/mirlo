@@ -2,6 +2,7 @@
 import {registerService, registerComponent} from '../dist/mirlo';
 import Test01 from './components/test01';
 import {ServiceTest02, Test02} from './components/test02';
+import Test03 from './components/test03';
 import {mockFetch} from './mocks';
 
 const waitRAF = () => new Promise(resolve => requestAnimationFrame(resolve));
@@ -13,6 +14,7 @@ beforeAll(async () => {
   registerService('servTest02', ServiceTest02);
   registerComponent('test01', Test01);
   registerComponent('test02', Test02);
+  registerComponent('test03', Test03);
   document.body.innerHTML = `
     <template id="template-mirlo-test01">
       <span id="zoneA"></span>
@@ -22,24 +24,28 @@ beforeAll(async () => {
       <div id="test01_title"></div>
       <div id="test02_title"></div>
     </template>
+    <template id="template-mirlo-test03">
+      <span id="test03_text"></div>
+    </template>
 
     <mirlo-test01 id="testA" myval='123'></mirlo-test01>
     <div id="containerB">
       <mirlo-test02 id="testB"></mirlo-test02>
     </div>
     <div id="containerC"></div>
+    <mirlo-test03 id="testC"></mirlo-test03>
   `;
 });
 
 test('load component', () => {
-  const dom_el_comp = document.body.querySelector('#testA');
+  const dom_el_comp = document.getElementById('testA');
   expect(dom_el_comp).not.toBeNull();
   const dom_el_comp_span = dom_el_comp.queryId('zoneA');
   expect(dom_el_comp_span.textContent).toBe('Hello World!');
 });
 
 test('click component', () => {
-  const dom_el_comp = document.body.querySelector('#testA');
+  const dom_el_comp = document.getElementById('testA');
   const dom_el_comp_span = dom_el_comp.queryId('zoneA');
   expect(dom_el_comp_span.textContent).not.toBe('Clicked!');
   dom_el_comp_span.click();
@@ -54,7 +60,7 @@ test('on-fly component initialization', async () => {
   new_div.appendChild(new_div_comp);
   document.getElementById('containerC').appendChild(new_div);
   await new Promise(process.nextTick); // flush promises
-  const dom_el_comp = document.body.querySelector('#test_comp_rmv');
+  const dom_el_comp = document.getElementById('test_comp_rmv');
   expect(dom_el_comp).not.toBeNull();
   const dom_el_comp_span = dom_el_comp.queryId('zoneA');
   expect(dom_el_comp_span.textContent).toBe('Hello World!');
@@ -62,7 +68,7 @@ test('on-fly component initialization', async () => {
 
 test('remove component', async () => {
   window.comp_rmv_count = 0;
-  document.body.querySelector('#test-rmv').remove();
+  document.getElementById('test-rmv').remove();
   expect(window.comp_rmv_count).toBe(1);
 });
 
@@ -88,14 +94,14 @@ test(`remove component performance [${MAX_COMPONENTS} components]`, async () => 
 });
 
 test('custom service', () => {
-  const dom_el_comp = document.body.querySelector('#testB');
+  const dom_el_comp = document.getElementById('testB');
   expect(dom_el_comp).not.toBeNull();
   const dom_el_comp_div = dom_el_comp.queryId('test01_title');
   expect(dom_el_comp_div.textContent).toBe('Hello Test! (127.0.0.1)');
 });
 
 test('component state', async () => {
-  const dom_el_comp = document.body.querySelector('#testB');
+  const dom_el_comp = document.getElementById('testB');
   const dom_el_comp_div = dom_el_comp.queryId('test01_title');
   expect(dom_el_comp_div.textContent).toBe('Hello Test! (127.0.0.1)');
   dom_el_comp.mirlo.state.desc = 'State rechanged!';
@@ -111,6 +117,21 @@ test('component state', async () => {
 });
 
 test('component fetch data', () => {
-  const componentTestB = document.getElementById('testB');
-  expect(componentTestB.netdata.ipify.ip).toBe('127.0.0.1');
+  const dom_el_comp = document.getElementById('testB');
+  expect(dom_el_comp.getFetchData('ipify').ip).toBe('127.0.0.1');
+});
+
+test('component animation', async () => {
+  const dom_el_comp = document.getElementById('testC');
+  await waitRAF();
+  expect(dom_el_comp.mirlo.state.counter).toBeGreaterThan(0);
+  const counter = Number(dom_el_comp.queryId('test03_text').textContent);
+  expect(counter).toBeGreaterThan(0);
+});
+
+test('component attribute change', async () => {
+  const dom_el_comp = document.getElementById('testA');
+  expect(dom_el_comp.mirlo.options.myval).toBe('123');
+  dom_el_comp.setAttribute('myVal', '42');
+  expect(dom_el_comp.mirlo.options.myval).toBe('42');
 });

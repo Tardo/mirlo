@@ -63,7 +63,7 @@ function initializeService(service_name) {
  * @param {boolean} force - Indicates if the service overwrite an existing one.
  */
 export function registerService(name, service, force = false) {
-  if (Object.hasOwn(registry.services, name) && !force) {
+  if (!force && Object.hasOwn(registry.services, name)) {
     console.warn(`Already exists a service called '${name}'!`);
     return;
   }

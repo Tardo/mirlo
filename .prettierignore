@@ -6,3 +6,4 @@ docs
 *.lock
 *.toml
 package-lock.json
+LICENSE

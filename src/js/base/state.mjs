@@ -1,12 +1,15 @@
 /**
+ * Proxy handler for the components state.
  * @typedef {Object} StateProxyHandler
+ * @private
  */
 
 /**
  * This is the proxy handler to use with the state binds.
+ * @type {StateProxyHandler}
  * @private
  */
-export default {
+const state_proxy_handler = {
   /** Relation to the mirlo component */
   _component_obj: null,
 
@@ -15,3 +18,5 @@ export default {
     return Reflect.set(...arguments);
   },
 };
+
+export default state_proxy_handler;

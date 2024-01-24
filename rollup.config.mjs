@@ -1,8 +1,6 @@
 /* eslint-disable */
 import path from 'path';
 import alias from '@rollup/plugin-alias';
-import {nodeResolve} from '@rollup/plugin-node-resolve';
-import commonjs from '@rollup/plugin-commonjs';
 import analyze from 'rollup-plugin-analyzer';
 import cleanup from 'rollup-plugin-cleanup';
 
@@ -25,10 +23,6 @@ export default [
           },
         ],
       }),
-      nodeResolve({
-        preferBuiltins: false,
-      }),
-      commonjs(),
       cleanup(),
       analyze(),
     ],

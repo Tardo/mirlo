@@ -1,5 +1,10 @@
 /**
  * Class representing a Component node. The services can be used at any time and are instantiated at startup.
+ * See {@tutorial Services} and {@tutorial Built-in}.
+ * @hideconstructor
+ * @see RequestsService
+ * @see LocalStorageService
+ * @see SessionStorageService
  */
 class Service {
   /**

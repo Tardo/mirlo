@@ -8,8 +8,9 @@ import {getService} from './app';
 let active_component = null;
 
 /**
- * Class representing a Component node.
- * @extends HTMLElement
+ * Class representing a Base Component node.
+ * See {@tutorial Components}.
+ * @tutorial components
  */
 class Component extends HTMLElement {
   /**
@@ -52,18 +53,32 @@ class Component extends HTMLElement {
     _events: null,
     _fetch_data: null,
     _state_binds: null,
+    _is_unsafe: false,
+    _external_rel_styles: null,
+    _animations: false,
   };
 
   /**
    * Create a Component node.
+   * @hideconstructor
    */
   constructor() {
     super();
-    this.#sdom = this.attachShadow({mode: 'closed'});
-    this.#renderTemplate();
     active_component = this;
     this.onSetup();
     active_component = null;
+    [
+      '_events',
+      '_fetch_data',
+      '_state_binds',
+      '_is_unsafe',
+      '_external_rel_styles',
+      '_animations',
+    ].forEach(item => Object.freeze(this.mirlo[item]));
+    if (!this.mirlo._is_unsafe) {
+      this.#sdom = this.attachShadow({mode: 'closed'});
+    }
+    this.renderTemplate();
   }
 
   /**
@@ -111,19 +126,7 @@ class Component extends HTMLElement {
       this.mirlo.state = this.#root_state;
     }
 
-    if (this.mirlo._fetch_data) {
-      const fetch_data_entries = Object.entries(this.mirlo._fetch_data);
-      const requests = getService('requests');
-      return Promise.all(
-        fetch_data_entries.map(([key, value]) =>
-          requests.postJSON(value.endpoint, value.data).then(result => {
-            this.#netdata[key] = result;
-            return result;
-          }),
-        ),
-      );
-    }
-    return Promise.resolve();
+    return this.#fetchData();
   }
 
   /**
@@ -152,6 +155,28 @@ class Component extends HTMLElement {
         });
       });
     }
+
+    if (this.mirlo._animations) {
+      this.#animate();
+    }
+  }
+
+  /**
+   * Invoked when a frame is drawn.
+   * @param {Number} timestamp - The time elapsed.
+   * @private
+   */
+  #animate(timestamp) {
+    this.onAnimationStep(timestamp);
+    window.requestAnimationFrame(this.#animate.bind(this));
+  }
+
+  /**
+   * Invoked when a frame is drawn.
+   * @param {Number} timestamp - The timestamp.
+   */
+  onAnimationStep() {
+    // Override me
   }
 
   /**
@@ -209,12 +234,34 @@ class Component extends HTMLElement {
   }
 
   /**
+   * Fetch data from the configured endpoints.
+   * @returns {Promise}
+   * @private
+   */
+  async #fetchData() {
+    if (this.mirlo._fetch_data) {
+      const fetch_data_entries = Object.entries(this.mirlo._fetch_data);
+      const requests = getService('requests');
+      const prom_res = await Promise.all(
+        fetch_data_entries.map(([key, value]) =>
+          requests.postJSON(value.endpoint, value.data).then(result => {
+            this.#netdata[key] = result;
+            Object.freeze(this.#netdata[key]);
+            return result;
+          }),
+        ),
+      );
+      return prom_res;
+    }
+  }
+
+  /**
    * Process the queue of the state binds changes.
    * @private
    */
   #queueStateFlush() {
-    this.#queue_state_changes.forEach(([target, attribute, value]) =>
-      this.constructor.updateStateBind(target, attribute, value),
+    this.#queue_state_changes.forEach(item =>
+      this.constructor.updateStateBind(...item),
     );
     this.#queue_state_changes = [];
     this.#queue_state_raf = null;
@@ -224,12 +271,22 @@ class Component extends HTMLElement {
    * Render the associated template.
    * A template is created using the node 'template' with an 'id' like "template-mirlo-<component name>".
    */
-  #renderTemplate() {
+  renderTemplate() {
     const template = document.getElementById(
       `template-${this.tagName.toLowerCase()}`,
     );
     if (template) {
-      this.#sdom.appendChild(template.content.cloneNode(true));
+      const tmpl_node = template.content.cloneNode(true);
+      if (this.mirlo._external_rel_styles) {
+        this.mirlo._external_rel_styles.forEach(href => {
+          const dom_el_link = document.createElement('link');
+          dom_el_link.setAttribute('type', 'text/css');
+          dom_el_link.setAttribute('rel', 'stylesheet');
+          dom_el_link.setAttribute('href', href);
+          tmpl_node.prepend(dom_el_link);
+        });
+      }
+      this.root.appendChild(tmpl_node);
     }
   }
 
@@ -266,6 +323,7 @@ class Component extends HTMLElement {
 
   /**
    * Configure component events.
+   * @param  {Object} event_defs - The event definition.
    * @throws Will throw an error if the method is called outside allocation time.
    */
   static useEvents(event_defs) {
@@ -275,6 +333,7 @@ class Component extends HTMLElement {
 
   /**
    * Configure component fetch data.
+   * @param  {Object} fetch_defs - The fetch data definition.
    * @throws Will throw an error if the method is called outside allocation time.
    */
   static useFetchData(fetch_defs) {
@@ -284,6 +343,7 @@ class Component extends HTMLElement {
 
   /**
    * Configure component state binds.
+   * @param  {Object} state_defs - The state bind definition.
    * @throws Will throw an error if the method is called outside allocation time.
    */
   static useStateBinds(state_defs) {
@@ -292,19 +352,51 @@ class Component extends HTMLElement {
   }
 
   /**
-   * Shadow Root.
-   * @type {ShadowRoot}
+   * Add external styles. Only useful if not uses {@link disableShadow}
+   * @param  {...string} rel_hrefs - The href of the stylesheet link.
+   * @throws Will throw an error if the method is called outside allocation time.
    */
-  get sdom() {
-    return this.#sdom;
+  static useStyles(...rel_hrefs) {
+    const comp = this.#getActiveComponent();
+    comp.mirlo._external_rel_styles = rel_hrefs;
   }
 
   /**
-   * Fetch data results.
+   * Enable 'onAnimation' callback.
+   * An animated component is always animated. It cannot be stopped or
+   * paused (it follows the browser's power saving policies).
+   * @throws Will throw an error if the method is called outside allocation time.
+   */
+  static enableAnimation() {
+    const comp = this.#getActiveComponent();
+    comp.mirlo._animations = true;
+  }
+
+  /**
+   * Disable Shadow Root.
+   * Not recommended if html templates are used.
+   * @throws Will throw an error if the method is called outside allocation time.
+   */
+  static disableShadow() {
+    const comp = this.#getActiveComponent();
+    comp.mirlo._is_unsafe = true;
+  }
+
+  /**
+   * Get the root node of the component
+   * @type {ShadowRoot|HTMLElement}
+   */
+  get root() {
+    return this.#sdom || this;
+  }
+
+  /**
+   * Get Fetch Data results.
+   * @param {string} ref_name = The fetch data reference name.
    * @type {Object}
    */
-  get netdata() {
-    return this.#netdata;
+  getFetchData(ref_name) {
+    return this.#netdata[ref_name];
   }
 
   /**
@@ -313,7 +405,7 @@ class Component extends HTMLElement {
    * @returns {NodeList}
    */
   queryAll(selector) {
-    return this.#sdom.querySelectorAll(selector);
+    return this.root.querySelectorAll(selector);
   }
 
   /**
@@ -322,7 +414,7 @@ class Component extends HTMLElement {
    * @returns {HTMLElement}
    */
   query(selector) {
-    return this.#sdom.querySelector(selector);
+    return this.root.querySelector(selector);
   }
 
   /**
@@ -331,7 +423,7 @@ class Component extends HTMLElement {
    * @returns {HTMLElement}
    */
   queryId(el_id) {
-    return this.#sdom.getElementById(el_id);
+    return (this.#sdom || document).getElementById(el_id);
   }
 }
 

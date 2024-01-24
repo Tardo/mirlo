@@ -1,16 +1,26 @@
 {
   "name": "mirlo",
+  "description": "Another Simple JavaScript WC",
   "version": "0.4.0",
   "type": "module",
   "keywords": [
-    "initiator",
+    "webcomponent",
     "simple",
     "javascript",
     "browser"
   ],
-  "description": "Another Simple JavaScript WC",
+  "files": [
+    "LICENSE",
+    "README.md",
+    "dist/"
+  ],
   "main": "./dist/mirlo.mjs",
-  "exports": "./dist/mirlo.mjs",
+  "exports": {
+    ".": {
+      "default": "./dist/mirlo.mjs"
+    },
+    "./package.json": "./package.json"
+  },
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/Tardo/mirlo.git"
@@ -28,12 +38,10 @@
     "watch": "rollup -c -w",
     "build": "rollup -c",
     "test": "npm run build && node --experimental-vm-modules node_modules/.bin/jest",
-    "generate-docs": "jsdoc -c jsdoc.json"
+    "generate-docs": "jsdoc -u ./tutorials -c jsdoc.json"
   },
   "devDependencies": {
     "@rollup/plugin-alias": "^5.0.1",
-    "@rollup/plugin-commonjs": "^25.0.7",
-    "@rollup/plugin-node-resolve": "^15.2.3",
     "@testing-library/dom": "^9.3.3",
     "@testing-library/jest-dom": "^6.1.6",
     "clean-jsdoc-theme": "^4.2.17",
