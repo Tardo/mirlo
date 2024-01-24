@@ -6,7 +6,7 @@
 
 <h2 align="center">
 
-![Static Badge](https://img.shields.io/badge/JSDoc-Page-33A2FF?link=https%3A%2F%2Ftardo.github.io%2Fmirlo%2F)
+[![Static Badge](https://img.shields.io/badge/JSDoc-Page-33A2FF)](https://tardo.github.io/mirlo/)
 [![Tests](https://github.com/Tardo/mirlo/actions/workflows/tests.yml/badge.svg)](https://github.com/Tardo/mirlo/actions/workflows/tests.yml)
 
 </h2>
@@ -67,4 +67,4 @@ import './components/demo01';
 
 ## Documentation
 
-`https://tardo.github.io/mirlo/`
+https://tardo.github.io/mirlo/
