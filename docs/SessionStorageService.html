@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>SessionStorageService - Documentation</title>
+    
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <script src="scripts/nav.js" defer></script>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav >
+    
+    
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Component.html">Component</a><ul class='methods'><li data-type='method'><a href="Component.html#getFetchData">getFetchData</a></li><li data-type='method'><a href="Component.html#onAnimationStep">onAnimationStep</a></li><li data-type='method'><a href="Component.html#onAttributeChanged">onAttributeChanged</a></li><li data-type='method'><a href="Component.html#onRemove">onRemove</a></li><li data-type='method'><a href="Component.html#onSetup">onSetup</a></li><li data-type='method'><a href="Component.html#onStart">onStart</a></li><li data-type='method'><a href="Component.html#onStateChanged">onStateChanged</a></li><li data-type='method'><a href="Component.html#onWillStart">onWillStart</a></li><li data-type='method'><a href="Component.html#query">query</a></li><li data-type='method'><a href="Component.html#queryAll">queryAll</a></li><li data-type='method'><a href="Component.html#queryId">queryId</a></li><li data-type='method'><a href="Component.html#renderTemplate">renderTemplate</a></li><li data-type='method'><a href="Component.html#.disableShadow">disableShadow</a></li><li data-type='method'><a href="Component.html#.enableAnimation">enableAnimation</a></li><li data-type='method'><a href="Component.html#.updateStateBind">updateStateBind</a></li><li data-type='method'><a href="Component.html#.useEvents">useEvents</a></li><li data-type='method'><a href="Component.html#.useFetchData">useFetchData</a></li><li data-type='method'><a href="Component.html#.useStateBinds">useStateBinds</a></li><li data-type='method'><a href="Component.html#.useStyles">useStyles</a></li></ul></li><li><a href="LocalStorageService.html">LocalStorageService</a><ul class='methods'><li data-type='method'><a href="LocalStorageService.html#getItem">getItem</a></li><li data-type='method'><a href="LocalStorageService.html#removeItem">removeItem</a></li><li data-type='method'><a href="LocalStorageService.html#setItem">setItem</a></li></ul></li><li><a href="RequestsService.html">RequestsService</a><ul class='methods'><li data-type='method'><a href="RequestsService.html#checkServerResult">checkServerResult</a></li><li data-type='method'><a href="RequestsService.html#destroy">destroy</a></li><li data-type='method'><a href="RequestsService.html#get">get</a></li><li data-type='method'><a href="RequestsService.html#getHeaders">getHeaders</a></li><li data-type='method'><a href="RequestsService.html#getJSON">getJSON</a></li><li data-type='method'><a href="RequestsService.html#post">post</a></li><li data-type='method'><a href="RequestsService.html#postJSON">postJSON</a></li><li data-type='method'><a href="RequestsService.html#queryJSON">queryJSON</a></li></ul></li><li><a href="Service.html">Service</a><ul class='methods'><li data-type='method'><a href="Service.html#destroy">destroy</a></li></ul></li><li><a href="SessionStorageService.html">SessionStorageService</a><ul class='methods'><li data-type='method'><a href="SessionStorageService.html#getItem">getItem</a></li><li data-type='method'><a href="SessionStorageService.html#removeItem">removeItem</a></li><li data-type='method'><a href="SessionStorageService.html#setItem">setItem</a></li></ul></li></ul><h3>Modules</h3><ul><li><a href="module-mirlo.html">mirlo</a><ul class='methods'><li data-type='method'><a href="module-mirlo.html#.getComponentClass">getComponentClass</a></li><li data-type='method'><a href="module-mirlo.html#.getService">getService</a></li><li data-type='method'><a href="module-mirlo.html#.getServiceClass">getServiceClass</a></li><li data-type='method'><a href="module-mirlo.html#.registerComponent">registerComponent</a></li><li data-type='method'><a href="module-mirlo.html#.registerService">registerService</a></li></ul></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-Built-in.html">Built-in</a></li><li><a href="tutorial-Components.html">Components</a></li><li><a href="tutorial-Services.html">Services</a></li><li><a href="tutorial-Templates.html">Templates</a></li></ul>
+    
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">SessionStorageService</h1>
+    
+
+    
+
+
+
+
+<section>
+
+<header>
+    
+        <h2>
+        
+            SessionStorageService
+        
+        </h2>
+        
+            <div class="class-description usertext"><p>Class representing a Browser Session Storage service.</p></div>
+        
+    
+</header>
+
+<article>
+    
+
+    
+        <h3 class="subsection-title">Extends</h3>
+
+        
+
+
+    <ul>
+        <li><a href="StorageService.html">StorageService</a></li>
+    </ul>
+
+
+    
+
+    
+
+    
+    
+    
+
+     
+
+    
+
+    
+        <h3 class="subsection-title">Members</h3>
+
+        
+            
+<h4 class="name" id="storage"><span class="type-signature"></span>storage<span class="type-signature"></span></h4>
+
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>The storage interface to use.</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="services_storage.mjs.html">services/storage.mjs</a>, <a href="services_storage.mjs.html#line11">line 11</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
+        <a href="StorageService.html#storage">StorageService#storage</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description usertext">
+    <p>The storage interface to use.</p>
+</div>
+
+
+
+
+
+
+
+
+        
+    
+
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        
+            
+
+    
+
+    <h4 class="name" id="getItem"><span class="type-signature"></span>getItem<span class="signature">(item, def_value)</span><span class="type-signature"> &rarr; {Any}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Get a value from the browser storage.</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="services_storage.mjs.html">services/storage.mjs</a>, <a href="services_storage.mjs.html#line19">line 19</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="StorageService.html#getItem">StorageService#getItem</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>item</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The key name.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>def_value</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Any</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The default value.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Any</span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="removeItem"><span class="type-signature"></span>removeItem<span class="signature">(item)</span><span class="type-signature"> &rarr; {Any}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Remove a value from the storage.</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="services_storage.mjs.html">services/storage.mjs</a>, <a href="services_storage.mjs.html#line49">line 49</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="StorageService.html#removeItem">StorageService#removeItem</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>item</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The key name.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Any</span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="setItem"><span class="type-signature"></span>setItem<span class="signature">(item, value, on_error)</span><span class="type-signature"> &rarr; {Any}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="services_storage.mjs.html">services/storage.mjs</a>, <a href="services_storage.mjs.html#line32">line 32</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="StorageService.html#setItem">StorageService#setItem</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>item</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The key name.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>value</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Any</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The value.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>on_error</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The error callback.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Any</span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+    
+
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.3</a> on Thu Aug 15 2024 23:54:12 GMT+0200 (hora de verano de Europa central) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/polyfill.js"></script>
+<script src="scripts/linenumber.js"></script>
+
+
+
+</body>
+</html>
