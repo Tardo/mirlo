@@ -14,7 +14,7 @@ import Service from '@mirlo/base/service';
  * @const
  * @private
  */
-const HTTP_METHOD = {
+export const HTTP_METHOD = {
   POST: 'POST',
   GET: 'GET',
 };
@@ -25,6 +25,8 @@ const HTTP_METHOD = {
  * @hideconstructor
  */
 class RequestsService extends Service {
+  #cache = {};
+
   /**
    * The error messages.
    * @type {Object}
@@ -50,23 +52,36 @@ class RequestsService extends Service {
    * @param {RequestsMethodEnum} method - The HTTP Request method.
    * @returns {Promise}
    */
-  async queryJSON(url, data, method = HTTP_METHOD.POST) {
-    const query_options = {
-      method: method,
-      mode: 'same-origin',
-      cache: 'no-cache',
-      credentials: 'same-origin',
-      headers: this.getHeaders({
-        'Content-Type': 'application/json',
-      }),
-      redirect: 'follow',
-      referrerPolicy: 'same-origin',
-    };
-    if (data && method.toUpperCase() === HTTP_METHOD.POST) {
-      query_options.body = JSON.stringify(data);
+  async queryJSON(url, data, method = HTTP_METHOD.POST, cache_name) {
+    const use_cache = typeof cache_name !== 'undefined';
+    let prom_response;
+    if (use_cache && Object.hasOwn(this.#cache, cache_name)) {
+      prom_response = this.#cache[cache_name];
+    } else {
+      const query_options = {
+        method: method,
+        mode: 'same-origin',
+        cache: 'no-cache',
+        credentials: 'same-origin',
+        headers: this.getHeaders({
+          'Content-Type': 'application/json',
+        }),
+        redirect: 'follow',
+        referrerPolicy: 'same-origin',
+      };
+      if (typeof data !== 'undefined') {
+        query_options.body = JSON.stringify(data);
+      }
+
+      if (use_cache) {
+        prom_response = this.#cache[cache_name] = fetch(url, query_options);
+      } else {
+        prom_response = fetch(url, query_options);
+      }
     }
-    const response = await fetch(url, query_options);
-    const result = response.json();
+
+    const response = await prom_response;
+    const result = await response.clone().json();
     if (this.checkServerResult(result)) {
       return result;
     }
@@ -77,19 +92,21 @@ class RequestsService extends Service {
    * POST Fetch JSON data.
    * @param {string} url - The URL.
    * @param {Object} data - The payload.
+   * @param {string} cache_name - The cache name.
    * @returns {Promise}
    */
-  postJSON(url, data) {
-    return this.queryJSON(url, data, HTTP_METHOD.POST);
+  postJSON(url, data, cache_name) {
+    return this.queryJSON(url, data, HTTP_METHOD.POST, cache_name);
   }
 
   /**
    *
    * @param {string} url - The URL.
+   * @param {string} cache_name - The cache name.
    * @returns {Promise}
    */
-  getJSON(url) {
-    return this.queryJSON(url, undefined, HTTP_METHOD.GET);
+  getJSON(url, cache_name) {
+    return this.queryJSON(url, undefined, HTTP_METHOD.GET, cache_name);
   }
 
   /**

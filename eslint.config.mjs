@@ -1,59 +1,28 @@
-import {FlatCompat} from '@eslint/eslintrc';
+import globals from 'globals';
 import js from '@eslint/js';
-import path from 'path';
-import {fileURLToPath} from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-  resolvePluginsRelativeTo: __dirname,
-  recommendedConfig: js.configs.recommended,
-});
+import prettierConfig from 'eslint-config-prettier';
 
 export default [
-  ...compat.extends('plugin:prettier/recommended'),
-
-  ...compat.env({
-    browser: true,
-    es6: true,
-    es2024: true,
-  }),
-
-  ...compat.plugins('jest'),
-
   {
     ignores: [
-      'node_modules',
-      '.github',
-      '.husky',
-      'dist',
-      'docs',
+      'node_modules/*',
+      '.github/*',
+      '.husky/*',
+      'dist/*',
+      'docs/**/*',
       '*.code-workspace',
       '*.lock',
       '*.toml',
       'package-lock.json',
-      'scripts/',
+      'scripts/*',
     ],
-  },
-
-  ...compat.config({
-    overrides: [
-      {
-        files: ['**/*.mjs'],
-        parserOptions: {
-          sourceType: 'module',
-        },
+    languageOptions: {
+      ecmaVersion: 2024,
+      sourceType: 'module',
+      globals: {
+        ...globals.browser,
       },
-      {
-        files: ['tests/**/*.mjs'],
-        env: {
-          jest: true,
-        },
-      },
-    ],
-    globals: {},
+    },
     rules: {
       eqeqeq: 'error',
       'no-empty-function': 'error',
@@ -91,5 +60,20 @@ export default [
       'no-extra-bind': 'warn',
       'no-lone-blocks': 'warn',
     },
-  }),
+  },
+  {
+    files: ['**/*.mjs'],
+    ...js.configs.recommended,
+    ...prettierConfig,
+  },
+  {
+    files: ['tests/**/*.mjs'],
+    ...js.configs.recommended,
+    ...prettierConfig,
+    languageOptions: {
+      globals: {
+        ...globals.jest,
+      },
+    },
+  },
 ];

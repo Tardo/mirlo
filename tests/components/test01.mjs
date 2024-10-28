@@ -1,6 +1,8 @@
 import {Component} from '../../dist/mirlo';
 
 export default class Test01 extends Component {
+  static observedAttributes = ['myval'];
+
   onSetup() {
     Component.useEvents({
       zoneA: {
@@ -16,10 +18,6 @@ export default class Test01 extends Component {
         },
       },
     });
-  }
-
-  static get observedAttributes() {
-    return ['myval'];
   }
 
   onRemove() {

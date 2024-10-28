@@ -1,4 +1,3 @@
-/* eslint-disable */
 import path from 'path';
 import alias from '@rollup/plugin-alias';
 import analyze from 'rollup-plugin-analyzer';

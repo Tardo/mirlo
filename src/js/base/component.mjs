@@ -1,3 +1,4 @@
+import {HTTP_METHOD} from '@mirlo/services/requests';
 import ComponentStateBinderHandler from './state';
 import {getService} from './app';
 
@@ -244,11 +245,18 @@ class Component extends HTMLElement {
       const requests = getService('requests');
       const prom_res = await Promise.all(
         fetch_data_entries.map(([key, value]) =>
-          requests.postJSON(value.endpoint, value.data).then(result => {
-            this.#netdata[key] = result;
-            Object.freeze(this.#netdata[key]);
-            return result;
-          }),
+          requests
+            .queryJSON(
+              value.endpoint,
+              value.data,
+              value.method ?? HTTP_METHOD.POST,
+              value.cache_name,
+            )
+            .then(result => {
+              this.#netdata[key] = result;
+              Object.freeze(this.#netdata[key]);
+              return result;
+            }),
         ),
       );
       return prom_res;
@@ -423,7 +431,10 @@ class Component extends HTMLElement {
    * @returns {HTMLElement}
    */
   queryId(el_id) {
-    return (this.#sdom || document).getElementById(el_id);
+    if (this.mirlo._is_unsafe) {
+      return document.getElementById(el_id);
+    }
+    return this.root.getElementById(el_id);
   }
 }
 

@@ -12,6 +12,8 @@ register it in Mirlo:
 import {Component, registerComponent} from 'mirlo';
 
 class Demo extends Component {
+  static observedAttributes = ['mycprop'];
+
   onSetup() {
     Component.useEvents({
       msg: {
@@ -24,7 +26,7 @@ class Demo extends Component {
   }
 
   onClickMessage(ev) {
-    ev.target.innerHTML = '<strong>Clicked!</strong>';
+    ev.target.innerHTML = `<strong>${this.mirlo.options.mycprop}</strong>`;
   }
 }
 
@@ -34,7 +36,7 @@ registerComponent('demo', Component);
 Now, use it:
 
 ```html
-<template id="template-mirlo-demo">
+<template id="template-mirlo-demo" mycprop="Clicked!">
   <div id="msg"><strong>Hello World!</strong></div>
 </template>
 
@@ -91,6 +93,8 @@ the `onSetup` step. With these functions you can configure the component:
     <CUSTOM NAME>: {
       enpoint: <String>,
       data: <Object>,
+      method: <"GET"|"POST">,
+      cache_name: <String>,
     }
   }
   ```

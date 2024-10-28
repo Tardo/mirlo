@@ -11,7 +11,7 @@ import Service from './base/service';
 
 // Built-in Services
 import {LocalStorageService, SessionStorageService} from './services/storage';
-import RequestsService from './services/requests';
+import {default as RequestsService, HTTP_METHOD} from './services/requests';
 registerService('requests', RequestsService);
 registerService('localStorage', LocalStorageService);
 registerService('sessionStorage', SessionStorageService);
@@ -28,4 +28,5 @@ export {
   registerService,
   getServiceClass,
   getService,
+  HTTP_METHOD,
 };
