@@ -7,6 +7,7 @@ import {
   getService,
 } from './base/app';
 import Component from './base/component';
+import AnimatedComponent from './components/animated';
 import Service from './base/service';
 
 // Built-in Services
@@ -19,6 +20,7 @@ registerService('sessionStorage', SessionStorageService);
 // Exports
 export {
   Component,
+  AnimatedComponent,
   Service,
   LocalStorageService,
   SessionStorageService,

@@ -36,6 +36,12 @@ import {Component, registerComponent} from 'mirlo';
 
 export default class Demo extends Component {
   onSetup() {
+    Component.useStateBinds({
+      msg: {
+        id: 'msg',
+        attribute: 'html',
+      },
+    });
     Component.useEvents({
       msg: {
         mode: 'id',
@@ -48,11 +54,11 @@ export default class Demo extends Component {
 
   onStart() {
     super.onStart();
-    this.queryId('msg').innerHTML = '<strong>Hello World!</strong>';
+    this.mirlo.state.msg = '<strong>Hello World!</strong>';
   }
 
-  onClickMessage(ev) {
-    ev.target.innerHTML = '<strong>Clicked!</strong>';
+  onClickMessage() {
+    this.mirlo.state.msg = '<strong>Clicked!</strong>';
   }
 }
 

@@ -23,13 +23,8 @@ export class Test02 extends Component {
     });
   }
 
-  async onWillStart() {
-    return super.onWillStart(...arguments);
-  }
-
   onStart() {
     super.onStart();
-    this.queryId('test01_title').innerHTML =
-      `<strong>Hello ${getService('servTest02').getName()}! (${this.getFetchData('ipify').ip})</strong>`;
+    this.mirlo.state.desc = `<strong>Hello ${getService('servTest02').getName()}! (${this.getFetchData('ipify').ip})</strong>`;
   }
 }

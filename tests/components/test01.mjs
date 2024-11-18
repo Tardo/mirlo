@@ -4,6 +4,16 @@ export default class Test01 extends Component {
   static observedAttributes = ['myval'];
 
   onSetup() {
+    Component.useStateBinds({
+      zoneA: {
+        id: 'zoneA',
+        attribute: 'html',
+      },
+      zoneB: {
+        id: 'zoneB',
+        attribute: 'html',
+      },
+    });
     Component.useEvents({
       zoneA: {
         mode: 'id',
@@ -20,21 +30,21 @@ export default class Test01 extends Component {
     });
   }
 
+  connectedCallback() {
+    super.connectedCallback();
+    this.queryId('zoneA').innerHTML = '<strong>Hello World!</strong>';
+  }
+
   onRemove() {
     super.onRemove();
     ++window.comp_rmv_count;
   }
 
-  onStart() {
-    super.onStart();
-    this.queryId('zoneA').innerHTML = '<strong>Hello World!</strong>';
-  }
-
   onClick(ev) {
     if (ev.target.id === 'zoneA') {
-      ev.target.innerHTML = '<strong>Clicked!</strong>';
+      this.mirlo.state.zoneA = '<strong>Clicked!</strong>';
     } else if (ev.target.id === 'zoneB') {
-      ev.target.innerHTML = `<strong>Clicked ${this.options.myval}!</strong>`;
+      this.mirlo.state.zoneB = `<strong>Clicked ${this.options.myval}!</strong>`;
     }
   }
 }

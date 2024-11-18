@@ -15,6 +15,12 @@ class Demo extends Component {
   static observedAttributes = ['mycprop'];
 
   onSetup() {
+    Component.useStateBinds({
+      msg: {
+        id: 'msg',
+        attribute: 'html',
+      },
+    });
     Component.useEvents({
       msg: {
         mode: 'id',
@@ -26,11 +32,11 @@ class Demo extends Component {
   }
 
   onClickMessage(ev) {
-    ev.target.innerHTML = `<strong>${this.mirlo.options.mycprop}</strong>`;
+    this.mirlo.state.msg = `<strong>${this.mirlo.options.mycprop}</strong>`;
   }
 }
 
-registerComponent('demo', Component);
+registerComponent('demo', Demo);
 ```
 
 Now, use it:
@@ -52,7 +58,6 @@ Now, use it:
 | onSetup            | [ ]    | Invoked at construction time.                                                                            | Configure the component.                                     |
 | onWillStart        | [x]    | Invoked when the component is added to the DOM.                                                          | Do necessary async work.                                     |
 | onStart            | [ ]    | Invoked when the component is added to the DOM and it is completely ready for use.                       | Change node.                                                 |
-| onAnimationStep    | [ ]    | Invoked on rAF. (Disabled by default)                                                                    | Change node.                                                 |
 | onAttributeChanged | [ ]    | Invoked when an attribute of the component changes. (Configured with 'observedAttributes' static method) | This is internally used to fill 'this.mirlo.options' object. |
 | onRemove           | [ ]    | Invoked when the component is removed from the DOM.                                                      | Cleanup.                                                     |
 
@@ -149,24 +154,4 @@ the `onSetup` step. With these functions you can configure the component:
   Component.useStyles(['/static/css/mycomponent.css']);
   ```
 
-- `enableAnimation()` -> Enable component animation mode.
-
 - `disableShadow()` -> Disable Shadow DOM usage.
-
-### Create an animated component
-
-```javascript
-import {Component, registerComponent} from 'mirlo';
-
-class DemoAnimated extends Component {
-  onSetup() {
-    Component.enableAnimation();
-  }
-
-  onAnimationStep(timestamp) {
-    console.log('TIMESTAMP:', timestamp);
-  }
-}
-
-registerComponent('demo-anim', DemoAnimated);
-```

@@ -31,7 +31,7 @@ class Component extends HTMLElement {
    * @type {Number}
    * @private
    */
-  #queue_state_raf = null;
+  #queue_state_raf = 0;
   /**
    * The Shadow Root of the node
    * @type {NodeList}
@@ -56,7 +56,7 @@ class Component extends HTMLElement {
     _state_binds: null,
     _is_unsafe: false,
     _external_rel_styles: null,
-    _animations: false,
+    _skip_queue_state_raf: false,
   };
 
   /**
@@ -74,7 +74,7 @@ class Component extends HTMLElement {
       '_state_binds',
       '_is_unsafe',
       '_external_rel_styles',
-      '_animations',
+      '_skip_queue_state_raf',
     ].forEach(item => Object.freeze(this.mirlo[item]));
     if (!this.mirlo._is_unsafe) {
       this.#sdom = this.attachShadow({mode: 'closed'});
@@ -87,7 +87,15 @@ class Component extends HTMLElement {
    * @private
    */
   connectedCallback() {
-    this.onWillStart().then(() => this.onStart(...arguments));
+    this.onWillStart().then(
+      () =>
+        window.requestAnimationFrame(() => {
+          this.mirlo._skip_queue_state_raf = true;
+          this.onStart(...arguments);
+          this.mirlo._skip_queue_state_raf = false;
+        }),
+      this.root,
+    );
   }
 
   /**
@@ -156,28 +164,6 @@ class Component extends HTMLElement {
         });
       });
     }
-
-    if (this.mirlo._animations) {
-      this.#animate();
-    }
-  }
-
-  /**
-   * Invoked when a frame is drawn.
-   * @param {Number} timestamp - The time elapsed.
-   * @private
-   */
-  #animate(timestamp) {
-    this.onAnimationStep(timestamp);
-    window.requestAnimationFrame(this.#animate.bind(this));
-  }
-
-  /**
-   * Invoked when a frame is drawn.
-   * @param {Number} timestamp - The timestamp.
-   */
-  onAnimationStep() {
-    // Override me
   }
 
   /**
@@ -225,10 +211,16 @@ class Component extends HTMLElement {
             return [target, bind.attribute, new_value];
           }),
         );
-        if (!this.#queue_state_raf && this.#queue_state_changes.length) {
-          this.#queue_state_raf = window.requestAnimationFrame(
-            this.#queueStateFlush.bind(this),
-          );
+
+        if (this.#queue_state_raf === 0 && this.#queue_state_changes.length) {
+          if (this.mirlo._skip_queue_state_raf) {
+            this.#queueStateFlush();
+          } else {
+            this.#queue_state_raf = window.requestAnimationFrame(
+              this.#queueStateFlush.bind(this),
+              this.root,
+            );
+          }
         }
       }
     }
@@ -272,7 +264,7 @@ class Component extends HTMLElement {
       this.constructor.updateStateBind(...item),
     );
     this.#queue_state_changes = [];
-    this.#queue_state_raf = null;
+    this.#queue_state_raf = 0;
   }
 
   /**
@@ -318,9 +310,8 @@ class Component extends HTMLElement {
    * Gets the active allocated component.
    * @returns {Component}
    * @throws Will throw an error if the method is called outside allocation time.
-   * @private
    */
-  static #getActiveComponent() {
+  static getActiveComponent() {
     if (!active_component) {
       throw new Error(
         'No active component. Hook functions must be used in the constructor.',
@@ -335,7 +326,7 @@ class Component extends HTMLElement {
    * @throws Will throw an error if the method is called outside allocation time.
    */
   static useEvents(event_defs) {
-    const comp = this.#getActiveComponent();
+    const comp = this.getActiveComponent();
     comp.mirlo._events = event_defs;
   }
 
@@ -345,7 +336,7 @@ class Component extends HTMLElement {
    * @throws Will throw an error if the method is called outside allocation time.
    */
   static useFetchData(fetch_defs) {
-    const comp = this.#getActiveComponent();
+    const comp = this.getActiveComponent();
     comp.mirlo._fetch_data = fetch_defs;
   }
 
@@ -355,7 +346,7 @@ class Component extends HTMLElement {
    * @throws Will throw an error if the method is called outside allocation time.
    */
   static useStateBinds(state_defs) {
-    const comp = this.#getActiveComponent();
+    const comp = this.getActiveComponent();
     comp.mirlo._state_binds = state_defs;
   }
 
@@ -365,19 +356,8 @@ class Component extends HTMLElement {
    * @throws Will throw an error if the method is called outside allocation time.
    */
   static useStyles(...rel_hrefs) {
-    const comp = this.#getActiveComponent();
+    const comp = this.getActiveComponent();
     comp.mirlo._external_rel_styles = rel_hrefs;
-  }
-
-  /**
-   * Enable 'onAnimation' callback.
-   * An animated component is always animated. It cannot be stopped or
-   * paused (it follows the browser's power saving policies).
-   * @throws Will throw an error if the method is called outside allocation time.
-   */
-  static enableAnimation() {
-    const comp = this.#getActiveComponent();
-    comp.mirlo._animations = true;
   }
 
   /**
@@ -386,7 +366,7 @@ class Component extends HTMLElement {
    * @throws Will throw an error if the method is called outside allocation time.
    */
   static disableShadow() {
-    const comp = this.#getActiveComponent();
+    const comp = this.getActiveComponent();
     comp.mirlo._is_unsafe = true;
   }
 

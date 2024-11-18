@@ -1,17 +1,16 @@
-import {Component} from '../../dist/mirlo';
+import {AnimatedComponent} from '../../dist/mirlo';
 
-export default class Test03 extends Component {
+export default class Test03 extends AnimatedComponent {
   onSetup() {
-    Component.useStateBinds({
+    AnimatedComponent.useStateBinds({
       counter: {
         id: 'test03_text',
       },
     });
-    Component.enableAnimation();
   }
 
-  async onWillStart() {
-    super.onWillStart();
+  onStart() {
+    super.onStart();
     this.mirlo.state.counter = 0;
   }
 

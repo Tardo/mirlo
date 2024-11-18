@@ -5,7 +5,10 @@ import {ServiceTest02, Test02} from './components/test02';
 import Test03 from './components/test03';
 import {mockFetch} from './mocks';
 
-const waitRAF = () => new Promise(resolve => requestAnimationFrame(resolve));
+const waitEvent = (elm, evt) =>
+  new Promise(resolve => elm.addEventListener(evt, resolve));
+const waitRAF = elm =>
+  new Promise(resolve => requestAnimationFrame(resolve, elm));
 const MAX_COMPONENTS = 2000;
 
 beforeAll(async () => {
@@ -44,11 +47,13 @@ test('load component', () => {
   expect(dom_el_comp_span.textContent).toBe('Hello World!');
 });
 
-test('click component', () => {
+test('click component', async () => {
   const dom_el_comp = document.getElementById('testA');
   const dom_el_comp_span = dom_el_comp.queryId('zoneA');
   expect(dom_el_comp_span.textContent).not.toBe('Clicked!');
+  await waitRAF();
   dom_el_comp_span.click();
+  await waitRAF();
   expect(dom_el_comp_span.textContent).toBe('Clicked!');
 });
 
@@ -73,11 +78,13 @@ test('remove component', async () => {
 });
 
 test(`on-fly component performance [${MAX_COMPONENTS} components]`, async () => {
+  const containerD = document.createElement('div');
   for (let i = 0; i < MAX_COMPONENTS; ++i) {
     const new_div_comp = document.createElement('mirlo-test01');
     new_div_comp.id = `test-comp-rmv-${i}`;
-    document.getElementById('containerC').appendChild(new_div_comp);
+    containerD.appendChild(new_div_comp);
   }
+  document.getElementById('containerC').appendChild(containerD);
   await new Promise(process.nextTick); // flush promises
   const componentTest = document.getElementById(
     `test-comp-rmv-${MAX_COMPONENTS - 1}`,
@@ -105,13 +112,13 @@ test('component state', async () => {
   const dom_el_comp_div = dom_el_comp.queryId('test01_title');
   expect(dom_el_comp_div.textContent).toBe('Hello Test! (127.0.0.1)');
   dom_el_comp.mirlo.state.desc = 'State rechanged!';
-  await waitRAF();
+  await waitRAF(dom_el_comp_div);
   expect(dom_el_comp_div.textContent).toBe('State rechanged!');
   const dom_el_comp_div_b = dom_el_comp.queryId('test02_title');
   expect(dom_el_comp_div_b.getAttribute('title')).toBeNull();
   dom_el_comp.mirlo.state.title = 'The title';
   dom_el_comp.mirlo.state.desc = 'State rechanged 2!';
-  await waitRAF();
+  await waitRAF(dom_el_comp_div_b);
   expect(dom_el_comp_div_b.getAttribute('title')).toBe('The title');
   expect(dom_el_comp_div.textContent).toBe('State rechanged 2!');
 });
@@ -123,7 +130,7 @@ test('component fetch data', () => {
 
 test('component animation', async () => {
   const dom_el_comp = document.getElementById('testC');
-  await waitRAF();
+  await waitRAF(dom_el_comp);
   expect(dom_el_comp.mirlo.state.counter).toBeGreaterThan(0);
   const counter = Number(dom_el_comp.queryId('test03_text').textContent);
   expect(counter).toBeGreaterThan(0);
