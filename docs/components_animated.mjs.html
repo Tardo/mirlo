@@ -3,7 +3,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>base/app.mjs - Documentation</title>
+    <title>components/animated.mjs - Documentation</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -35,7 +35,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">base/app.mjs</h1>
+    <h1 class="page-title">components/animated.mjs</h1>
     
 
     
@@ -45,96 +45,82 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>/**
- * Mirlo
- * @module mirlo
- * @see Component
- * @see Service
- */
+            <pre class="prettyprint source linenums"><code>import Component from '@mirlo/base/component';
 
 /**
- * This are the internal registry for classes.
- * @type Object
- * @property {Object} components - The components.
- * @property {Object} services - The services.
- * @const
- * @private
+ * Class representing a Animated Component node.
+ * See {@tutorial AnimatedComponents}.
+ * @tutorial components
  */
-const registry = {
-  components: {},
-  services: {},
-};
-/**
- * This are the allocated services.
- * @const
- * @private
- */
-const services = {};
+class AnimatedComponent extends Component {
+  /**
+   * The rAF handler for animation.
+   * @type {Number}
+   * @private
+   */
+  #animation_raf = 0;
 
-/**
- * Register a new component.
- * @param {string} name - The name for the component.
- * @param {Component} component - The class of the component to allocate.
- */
-export function registerComponent(name, component) {
-  if (Object.hasOwn(registry.components, name)) {
-    console.warn(`Already exists a component called '${name}'!`);
-    return;
+  /**
+   * Flag to know if the animation loop is running
+   * @type {Boolean}
+   * @private
+   */
+  #animation_running = true;
+
+  /**
+   * @override
+   */
+  onStart() {
+    super.onStart();
+    this.startAnimation();
   }
-  registry.components[name] = component;
-  customElements.define(`mirlo-${name}`, component);
-}
 
-/**
- * Get the component class.
- * @param {string} name - The component name.
- * @returns {Component}
- */
-export function getComponentClass(name) {
-  return registry.components[name];
-}
-
-/**
- * Instantiate a service.
- * @param {string} service_name - The service name.
- * @private
- */
-function initializeService(service_name) {
-  services[service_name] = new registry.services[service_name]();
-}
-
-/**
- * Register a new service.
- * @param {string} name - The service name.
- * @param {Service} service - The service class.
- * @param {boolean} force - Indicates if the service overwrite an existing one.
- */
-export function registerService(name, service, force = false) {
-  if (!force &amp;&amp; Object.hasOwn(registry.services, name)) {
-    console.warn(`Already exists a service called '${name}'!`);
-    return;
+  /**
+   * Start the animation loop
+   */
+  startAnimation() {
+    if (this.#animation_raf !== 0) {
+      window.cancelAnimationFrame(this.#animation_raf);
+    }
+    this.#animation_running = true;
+    this.#animation_raf = window.requestAnimationFrame(this.#animate.bind(this), this.root);
   }
-  registry.services[name] = service;
-  initializeService(name);
+
+  /**
+   * Stop the animation loop
+   */
+   stopAnimation() {
+    if (this.#animation_raf !== 0) {
+      window.cancelAnimationFrame(this.#animation_raf);
+      this.#animation_raf = 0;
+    }
+    this.#animation_running = false;
+  }
+
+  /**
+   * Invoked when a frame is drawn.
+   * @param {Number} timestamp - The time elapsed.
+   * @private
+   */
+  #animate(timestamp) {
+    this.mirlo._skip_queue_state_raf = true;
+    this.onAnimationStep(timestamp);
+    this.mirlo._skip_queue_state_raf = false;
+    if (this.#animation_running) {
+      this.#animation_raf = window.requestAnimationFrame(this.#animate.bind(this), this.root);
+    }
+  }
+
+  /**
+   * Invoked when a frame is drawn.
+   * @param {Number} timestamp - The timestamp.
+   */
+  onAnimationStep() {
+    // Override me
+  }
 }
 
-/**
- * Get the service class.
- * @param {string} name - The service name.
- * @returns {Service}
- */
-export function getServiceClass(name) {
-  return registry.services[name];
-}
-
-/**
- * Get the service instance.
- * @param {string} name - The component name.
- * @returns {Service}
- */
-export function getService(name) {
-  return services[name];
-}
+export default AnimatedComponent;
 </code></pre>
         </article>
     </section>

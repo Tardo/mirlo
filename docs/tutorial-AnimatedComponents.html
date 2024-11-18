@@ -3,7 +3,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>base/app.mjs - Documentation</title>
+    <title>Tutorial: AnimatedComponents - Documentation</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -35,112 +35,89 @@
 
 <div id="main">
     
-    <h1 class="page-title">base/app.mjs</h1>
+    <h1 class="page-title">Tutorial: AnimatedComponents</h1>
     
 
-    
-
-
-
-    
     <section>
-        <article>
-            <pre class="prettyprint source linenums"><code>/**
- * Mirlo
- * @module mirlo
- * @see Component
- * @see Service
- */
 
-/**
- * This are the internal registry for classes.
- * @type Object
- * @property {Object} components - The components.
- * @property {Object} services - The services.
- * @const
- * @private
- */
-const registry = {
-  components: {},
-  services: {},
-};
-/**
- * This are the allocated services.
- * @const
- * @private
- */
-const services = {};
+<header>
+    
 
-/**
- * Register a new component.
- * @param {string} name - The name for the component.
- * @param {Component} component - The class of the component to allocate.
- */
-export function registerComponent(name, component) {
-  if (Object.hasOwn(registry.components, name)) {
-    console.warn(`Already exists a component called '${name}'!`);
-    return;
+    <h2>AnimatedComponents</h2>
+</header>
+
+<article>
+    <h1 id="create-a-basic-animated-component">Create a basic animated component</h1>
+<p>To implement a animated component you simply create a class that extends
+<code>AnimatedComponent</code> and register it in Mirlo:</p>
+<pre class="prettyprint source lang-javascript"><code>import {AnimatedComponent, registerComponent} from 'mirlo';
+
+class DemoAnimated extends AnimatedComponent {
+  #counter = 0;
+
+  onSetup() {
+    AnimatedComponent.useStateBinds({
+      counter: {
+        id: 'msg',
+      }
+    });
   }
-  registry.components[name] = component;
-  customElements.define(`mirlo-${name}`, component);
-}
 
-/**
- * Get the component class.
- * @param {string} name - The component name.
- * @returns {Component}
- */
-export function getComponentClass(name) {
-  return registry.components[name];
-}
-
-/**
- * Instantiate a service.
- * @param {string} service_name - The service name.
- * @private
- */
-function initializeService(service_name) {
-  services[service_name] = new registry.services[service_name]();
-}
-
-/**
- * Register a new service.
- * @param {string} name - The service name.
- * @param {Service} service - The service class.
- * @param {boolean} force - Indicates if the service overwrite an existing one.
- */
-export function registerService(name, service, force = false) {
-  if (!force &amp;&amp; Object.hasOwn(registry.services, name)) {
-    console.warn(`Already exists a service called '${name}'!`);
-    return;
+  onStart() {
+    super.onStart();
+    this.mirlo.state.counter = 0;
   }
-  registry.services[name] = service;
-  initializeService(name);
+
+  onAnimationStep(timestamp) {
+    console.log('TIMESTAMP:', timestamp);
+    if (this.#counter === 500) {
+      this.stopAnimation();
+    }
+    ++this.mirlo.state.counter;
+  }
 }
 
-/**
- * Get the service class.
- * @param {string} name - The service name.
- * @returns {Service}
- */
-export function getServiceClass(name) {
-  return registry.services[name];
-}
-
-/**
- * Get the service instance.
- * @param {string} name - The component name.
- * @returns {Service}
- */
-export function getService(name) {
-  return services[name];
-}
+registerComponent('demo-anim', DemoAnimated);
 </code></pre>
-        </article>
-    </section>
+<p>Now, use it:</p>
+<pre class="prettyprint source lang-html"><code>&lt;template id=&quot;template-mirlo-demo-anim&quot;>
+  &lt;div id=&quot;msg&quot;>&lt;/div>
+&lt;/template>
 
+&lt;mirlo-demo-anim>&lt;/mirlo-demo-anim>
+</code></pre>
+<h1 id="more-details">More details</h1>
+<h2 id="lifecycle">Lifecycle</h2>
+<table>
+<thead>
+<tr>
+<th>Callback</th>
+<th>Async?</th>
+<th>Description</th>
+<th>Good moment for...</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>onAnimationStep</td>
+<td>[ ]</td>
+<td>Invoked on rAF. (Disabled by default)</td>
+<td>Change node.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="anim.-functions">Anim. Functions</h2>
+<ul>
+<li>
+<p><code>startAnimation()</code> -&gt; Start the animation loop.</p>
+</li>
+<li>
+<p><code>stopAnimation()</code> -&gt; Stop animation loop.</p>
+</li>
+</ul>
+</article>
 
-
+</section>
 
     
     
