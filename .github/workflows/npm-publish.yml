@@ -11,10 +11,16 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v5
         with:
-          node-version: 16
+          fetch-depth: 0
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '*'
+          check-latest: true
+      - run: |
+          npm install --global npm
+          npm install
       - run: npm ci
       - run: npm test
 
@@ -22,11 +28,17 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v5
         with:
-          node-version: 16
+          fetch-depth: 0
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '*'
+          check-latest: true
           registry-url: https://registry.npmjs.org/
+      - run: |
+          npm install --global npm
+          npm install
       - run: npm ci
       - run: npm run build
       - run: npm publish

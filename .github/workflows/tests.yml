@@ -32,7 +32,6 @@ jobs:
           check-latest: true
 
       - run: |
-          python -m pip install --upgrade pip
           npm ci --cache .npm --prefer-offline
           npm install --global npm
           npm install
