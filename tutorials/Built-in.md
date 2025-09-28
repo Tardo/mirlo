@@ -19,16 +19,8 @@ For example, if we want to modify the headers sent by the 'requests' service we 
 import {RequestsService, registerService} from 'mirlo';
 
 export default class MyRequestsService extends RequestsService {
-  onInit() {
-    super.onInit(...arguments);
-    this.user_info = {
-      csrftoken: 'ABC123',
-    };
-  }
-  getHeaders(custom_headers) {
-    return Object.assign(custom_headers, {
-      'X-CSRFToken': this.user_info.csrftoken,
-    });
+  getUsername(item) {
+    return 'Juancho Panza';
   }
 }
 
