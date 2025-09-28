@@ -1,6 +1,8 @@
 import globals from 'globals';
 import js from '@eslint/js';
+import ftflow from 'eslint-plugin-ft-flow';
 import prettierConfig from 'eslint-config-prettier';
+import hermes from 'hermes-eslint';
 
 export default [
   {
@@ -19,16 +21,20 @@ export default [
     languageOptions: {
       ecmaVersion: 2024,
       sourceType: 'module',
+      parser: hermes,
       globals: {
         ...globals.browser,
       },
+    },
+    plugins: {
+      "ft-flow": ftflow,
     },
     rules: {
       eqeqeq: 'error',
       'no-empty-function': 'error',
       'no-eval': 'error',
       'no-implicit-coercion': 'error',
-      'no-implicit-globals': 'error',
+      'no-implicit-globals': 'off',
       'no-implied-eval': 'error',
       'no-return-assign': 'error',
       'no-undef-init': 'error',

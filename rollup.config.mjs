@@ -1,5 +1,7 @@
 import path from 'path';
 import alias from '@rollup/plugin-alias';
+import {babel} from '@rollup/plugin-babel';
+import eslint from '@rollup/plugin-eslint';
 import analyze from 'rollup-plugin-analyzer';
 import cleanup from 'rollup-plugin-cleanup';
 
@@ -21,6 +23,12 @@ export default [
             replacement: path.resolve('src/js'),
           },
         ],
+      }),
+      babel({
+        babelHelpers: 'bundled',
+      }),
+      eslint({
+        fix: true,
       }),
       cleanup(),
       analyze(),

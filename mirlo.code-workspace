@@ -4,5 +4,14 @@
 			"name": "Mirlo",
 			"path": "."
 		}
-	]
+	],
+	"settings": {
+    	"javascript.validate.enable": false,
+		"flow.useNPMPackagedFlow": true,
+		"jest.runMode": "on-demand",
+		"jest.jestCommandLine": "npm test",
+		"jest.virtualFolders": [
+			{"name": "integration-tests", "runMode": "on-demand", "jestCommandLine": "npm test"}
+		]
+  	}
 }

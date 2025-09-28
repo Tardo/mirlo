@@ -1,0 +1,21 @@
+[ignore]
+
+[include]
+
+[libs]
+src/js/flow-typed
+
+[lints]
+
+[options]
+include_warnings=true
+module.system.node.resolve_dirname=node_modules
+module.name_mapper='^@mirlo' -> '<PROJECT_ROOT>/src/js'
+
+[strict]
+nonstrict-import
+unclear-type
+unsafe-getters-setters
+untyped-import
+untyped-type-import
+sketchy-null

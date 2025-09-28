@@ -1,4 +1,7 @@
+// @flow strict
 import Service from '@mirlo/base/service';
+
+export type CallbackStorageOnError = {error: mixed} => void;
 
 /**
  * Class to implement Browser Storage operations as a Service.
@@ -8,7 +11,7 @@ import Service from '@mirlo/base/service';
  */
 export class StorageService extends Service {
   /** The storage interface to use. */
-  storage = null;
+  storage: MirloStorage;
 
   /**
    * Get a value from the browser storage.
@@ -16,9 +19,10 @@ export class StorageService extends Service {
    * @param {Any} def_value - The default value.
    * @returns {Any}
    */
-  getItem(item, def_value) {
+  getItem(item: string, def_value: mixed): mixed {
+    const store_value = this.storage.getItem(item);
     return (
-      (this.storage && JSON.parse(this.storage.getItem(item))) || def_value
+      (this.storage && typeof store_value === "string" && JSON.parse(store_value)) || def_value
     );
   }
 
@@ -29,9 +33,9 @@ export class StorageService extends Service {
    * @param {Function} on_error - The error callback.
    * @returns {Any}
    */
-  setItem(item, value, on_error) {
+  setItem(item: string, value: mixed, on_error: CallbackStorageOnError): mixed {
     try {
-      return this.storage.setItem(item, JSON.stringify(value));
+      return this.storage.setItem(item, JSON.stringify(String(value)));
     } catch (err) {
       if (on_error) {
         on_error(err);
@@ -46,7 +50,7 @@ export class StorageService extends Service {
    * @param {string} item - The key name.
    * @returns {Any}
    */
-  removeItem(item) {
+  removeItem(item: string): mixed {
     return (this.storage && this.storage.removeItem(item)) || undefined;
   }
 }
@@ -57,7 +61,7 @@ export class StorageService extends Service {
  * @hideconstructor
  */
 export class LocalStorageService extends StorageService {
-  storage = localStorage;
+  storage: Storage = localStorage;
 }
 
 /**
@@ -66,5 +70,5 @@ export class LocalStorageService extends StorageService {
  * @hideconstructor
  */
 export class SessionStorageService extends StorageService {
-  storage = sessionStorage;
+  storage: Storage = sessionStorage;
 }

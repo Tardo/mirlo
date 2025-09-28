@@ -1,3 +1,4 @@
+// @flow strict
 import Service from '@mirlo/base/service';
 
 /**
@@ -25,53 +26,41 @@ export const HTTP_METHOD = {
  * @hideconstructor
  */
 class RequestsService extends Service {
-  #cache = {};
+  #cache: {[string]: Promise<Response>} = {};
 
   /**
    * The error messages.
    * @type {Object}
    * @property {string} e200 - The message for business logic error.
    */
-  MESSAGES = {
+  MESSAGES: MirloHTTPResponseMessage = {
     e200: '200: Invalid server result!',
   };
 
   /**
-   * Get the HTTP Requests headers.
-   * @param {Object} custom_headers - The http headers.
-   * @returns {Object}
-   */
-  getHeaders(custom_headers) {
-    return custom_headers;
-  }
-
-  /**
    * Fetch JSON data.
    * @param {string} url - The URL.
-   * @param {Object} data - The payload.
-   * @param {RequestsMethodEnum} method - The HTTP Request method.
+   * @param {RequestOptions} custom_options - The request options.
+   * @param {string} cache_name - The cache name.
    * @returns {Promise}
    */
-  async queryJSON(url, data, method = HTTP_METHOD.POST, cache_name) {
+  async queryJSON(url: string, custom_options: RequestOptions, cache_name: string): Promise<{...}> {
     const use_cache = typeof cache_name !== 'undefined';
     let prom_response;
     if (use_cache && Object.hasOwn(this.#cache, cache_name)) {
       prom_response = this.#cache[cache_name];
     } else {
-      const query_options = {
-        method: method,
+      const query_options: RequestOptions = {
         mode: 'same-origin',
         cache: 'no-cache',
         credentials: 'same-origin',
-        headers: this.getHeaders({
+        headers: {
           'Content-Type': 'application/json',
-        }),
+        },
         redirect: 'follow',
         referrerPolicy: 'same-origin',
       };
-      if (typeof data !== 'undefined') {
-        query_options.body = JSON.stringify(data);
-      }
+      Object.assign(query_options, custom_options);
 
       if (use_cache) {
         prom_response = this.#cache[cache_name] = fetch(url, query_options);
@@ -91,77 +80,99 @@ class RequestsService extends Service {
   /**
    * POST Fetch JSON data.
    * @param {string} url - The URL.
-   * @param {Object} data - The payload.
+   * @param {RequestOptions} custom_options - The request options.
    * @param {string} cache_name - The cache name.
    * @returns {Promise}
    */
-  postJSON(url, data, cache_name) {
-    return this.queryJSON(url, data, HTTP_METHOD.POST, cache_name);
+  postJSON(url: string, custom_options: RequestOptions, cache_name: string): Promise<{...}> {
+    const query_options: RequestOptions = {
+      method: HTTP_METHOD.POST,
+    };
+    Object.assign(query_options, custom_options);
+    return this.queryJSON(url, query_options, cache_name);
   }
 
   /**
    *
    * @param {string} url - The URL.
+   * @param {RequestOptions} custom_options - The request options.
    * @param {string} cache_name - The cache name.
    * @returns {Promise}
    */
-  getJSON(url, cache_name) {
-    return this.queryJSON(url, undefined, HTTP_METHOD.GET, cache_name);
+  getJSON(url: string, custom_options: RequestOptions, cache_name: string): Promise<{...}> {
+    const query_options: RequestOptions = {
+      method: HTTP_METHOD.GET,
+    };
+    Object.assign(query_options, custom_options);
+    return this.queryJSON(url, query_options, cache_name);
   }
 
   /**
    * POST Fetch data.
    * @param {string} url - The URL.
-   * @param {Object} data - The payload.
-   * @param {string} cache - The cache store name.
+   * @param {RequestOptions} custom_options - The request options.
+   * @param {string} cache_name - The cache store name.
    * @returns {Any}
    */
-  async post(url, data, cache = 'default') {
-    let fdata = false;
-    if (typeof data === 'object') {
-      fdata = new URLSearchParams();
-      for (const k in data) {
-        fdata.append(k, data[k]);
+  async post(url: string, custom_options: RequestOptions, cache_name: string): Promise<mixed> {
+    const use_cache = typeof cache_name !== 'undefined';
+    let prom_response;
+    if (use_cache && Object.hasOwn(this.#cache, cache_name)) {
+      prom_response = this.#cache[cache_name];
+    } else {
+      const query_options: RequestOptions = {
+        method: 'POST',
+        mode: 'same-origin',
+        cache: 'no-cache',
+        credentials: 'same-origin',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        redirect: 'follow',
+        referrerPolicy: 'same-origin',
+      };
+      Object.assign(query_options, custom_options);
+
+      if (use_cache) {
+        prom_response = this.#cache[cache_name] = fetch(url, query_options);
+      } else {
+        prom_response = fetch(url, query_options);
       }
-    } else if (typeof data === 'string') {
-      fdata = data;
     }
-    const response = await fetch(url, {
-      method: 'POST',
-      mode: 'same-origin',
-      cache: cache,
-      credentials: 'same-origin',
-      headers: this.getHeaders({
-        'Content-Type': 'application/x-www-form-urlencoded',
-      }),
-      redirect: 'follow',
-      referrerPolicy: 'same-origin',
-      body: fdata,
-    });
-    const result = response.json();
-    if (this.checkServerResult(result)) {
-      return result;
-    }
-    throw Error(this.MESSAGES.e200);
+
+    return prom_response;
   }
 
   /**
    * GET Fetch data.
    * @param {string} url
-   * @param {string} cache
+   * @param {RequestOptions} custom_options - The request options.
+   * @param {string} cache_name - The cache store name.
    * @returns {Any}
    */
-  async get(url, cache = 'default') {
-    const response = await fetch(url, {
-      method: 'GET',
-      mode: 'same-origin',
-      cache: cache,
-      credentials: 'same-origin',
-      headers: this.getHeaders(),
-      redirect: 'follow',
-      referrerPolicy: 'same-origin',
-    });
-    return response.blob();
+  async get(url: string, custom_options: RequestOptions, cache_name: string): Promise<mixed> {
+    const use_cache = typeof cache_name !== 'undefined';
+    let prom_response;
+    if (use_cache && Object.hasOwn(this.#cache, cache_name)) {
+      prom_response = this.#cache[cache_name];
+    } else {
+      const query_options: RequestOptions = {
+        method: 'GET',
+        mode: 'same-origin',
+        cache: 'no-cache',
+        credentials: 'same-origin',
+        redirect: 'follow',
+        referrerPolicy: 'same-origin',
+      };
+      Object.assign(query_options, custom_options);
+
+      if (use_cache) {
+        prom_response = this.#cache[cache_name] = fetch(url, query_options);
+      } else {
+        prom_response = fetch(url, query_options);
+      }
+    }
+    return await prom_response;
   }
 
   /**
@@ -169,7 +180,7 @@ class RequestsService extends Service {
    * @param {Object} data - The response data.
    * @returns {boolean}
    */
-  checkServerResult(data) {
+  checkServerResult(data: {...}): boolean {
     if (!data || typeof data === 'undefined') {
       return false;
     }

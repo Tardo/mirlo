@@ -1,3 +1,4 @@
+// @flow strict
 import Component from '@mirlo/base/component';
 
 /**
@@ -37,7 +38,7 @@ class AnimatedComponent extends Component {
     }
     this.#animation_running = true;
     this.#animation_raf = window.requestAnimationFrame(
-      this.#animate.bind(this),
+      (timestamp) => this.#animate(timestamp),
       this.root,
     );
   }
@@ -58,13 +59,13 @@ class AnimatedComponent extends Component {
    * @param {Number} timestamp - The time elapsed.
    * @private
    */
-  #animate(timestamp) {
+  #animate(timestamp: number) {
     this.mirlo._skip_queue_state_raf = true;
     this.onAnimationStep(timestamp);
     this.mirlo._skip_queue_state_raf = false;
     if (this.#animation_running) {
       this.#animation_raf = window.requestAnimationFrame(
-        this.#animate.bind(this),
+        (timestamp_raf) => this.#animate(timestamp_raf),
         this.root,
       );
     }
@@ -74,7 +75,7 @@ class AnimatedComponent extends Component {
    * Invoked when a frame is drawn.
    * @param {Number} timestamp - The timestamp.
    */
-  onAnimationStep() {
+  onAnimationStep(timestamp: number) {
     // Override me
   }
 }

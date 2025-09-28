@@ -1,9 +1,15 @@
+// @flow strict
 /**
  * Mirlo
  * @module mirlo
  * @see Component
  * @see Service
  */
+
+import typeof ComponentCtor from './component'
+import typeof ServiceCtor from './service'
+import type Component from './component'
+import type Service from './service'
 
 /**
  * This are the internal registry for classes.
@@ -13,7 +19,11 @@
  * @const
  * @private
  */
-const registry = {
+export type MirloRegistry = {
+  components: {[string]: ComponentCtor},
+  services: {[string]: ServiceCtor},
+};
+const registry: MirloRegistry = {
   components: {},
   services: {},
 };
@@ -22,14 +32,14 @@ const registry = {
  * @const
  * @private
  */
-const services = {};
+const services: {[string]: Service} = {};
 
 /**
  * Register a new component.
  * @param {string} name - The name for the component.
  * @param {Component} component - The class of the component to allocate.
  */
-export function registerComponent(name, component) {
+export function registerComponent(name: string, component: ComponentCtor) {
   if (Object.hasOwn(registry.components, name)) {
     console.warn(`Already exists a component called '${name}'!`);
     return;
@@ -43,7 +53,7 @@ export function registerComponent(name, component) {
  * @param {string} name - The component name.
  * @returns {Component}
  */
-export function getComponentClass(name) {
+export function getComponentClass(name: string): ComponentCtor | void {
   return registry.components[name];
 }
 
@@ -52,7 +62,7 @@ export function getComponentClass(name) {
  * @param {string} service_name - The service name.
  * @private
  */
-function initializeService(service_name) {
+function initializeService(service_name: string) {
   services[service_name] = new registry.services[service_name]();
 }
 
@@ -62,7 +72,7 @@ function initializeService(service_name) {
  * @param {Service} service - The service class.
  * @param {boolean} force - Indicates if the service overwrite an existing one.
  */
-export function registerService(name, service, force = false) {
+export function registerService(name: string, service: ServiceCtor, force: boolean = false) {
   if (!force && Object.hasOwn(registry.services, name)) {
     console.warn(`Already exists a service called '${name}'!`);
     return;
@@ -76,7 +86,7 @@ export function registerService(name, service, force = false) {
  * @param {string} name - The service name.
  * @returns {Service}
  */
-export function getServiceClass(name) {
+export function getServiceClass(name: string): ServiceCtor | void {
   return registry.services[name];
 }
 
@@ -85,6 +95,6 @@ export function getServiceClass(name) {
  * @param {string} name - The component name.
  * @returns {Service}
  */
-export function getService(name) {
+export function getService(name: string): Service | void {
   return services[name];
 }
