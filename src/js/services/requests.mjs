@@ -51,14 +51,9 @@ class RequestsService extends Service {
       prom_response = this.#cache[cache_name];
     } else {
       const query_options: RequestOptions = {
-        mode: 'same-origin',
-        cache: 'no-cache',
-        credentials: 'same-origin',
         headers: {
           'Content-Type': 'application/json',
         },
-        redirect: 'follow',
-        referrerPolicy: 'same-origin',
       };
       Object.assign(query_options, custom_options);
 
@@ -122,14 +117,6 @@ class RequestsService extends Service {
     } else {
       const query_options: RequestOptions = {
         method: 'POST',
-        mode: 'same-origin',
-        cache: 'no-cache',
-        credentials: 'same-origin',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        redirect: 'follow',
-        referrerPolicy: 'same-origin',
       };
       Object.assign(query_options, custom_options);
 
@@ -158,11 +145,6 @@ class RequestsService extends Service {
     } else {
       const query_options: RequestOptions = {
         method: 'GET',
-        mode: 'same-origin',
-        cache: 'no-cache',
-        credentials: 'same-origin',
-        redirect: 'follow',
-        referrerPolicy: 'same-origin',
       };
       Object.assign(query_options, custom_options);
 
