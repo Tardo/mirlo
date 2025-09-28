@@ -1,10 +1,10 @@
 // @flow strict
-import { default as RequestsService, HTTP_METHOD} from '@mirlo/services/requests';
+import {default as RequestsService, HTTP_METHOD} from '@mirlo/services/requests';
 import ComponentStateBinderHandler from './state';
 import {getService} from './app';
 
 import type Service from './service';
-import type { MirloStateHandler } from "./state.mjs";
+import type {MirloStateHandler} from './state.mjs';
 
 /**
  * The active component.
@@ -78,14 +78,9 @@ class Component extends HTMLElement {
     active_component = this;
     this.onSetup();
     active_component = null;
-    [
-      '_events',
-      '_fetch_data',
-      '_state_binds',
-      '_is_unsafe',
-      '_external_rel_styles',
-      '_skip_queue_state_raf',
-    ].forEach(item => Object.freeze(this.mirlo[item]));
+    ['_events', '_fetch_data', '_state_binds', '_is_unsafe', '_external_rel_styles', '_skip_queue_state_raf'].forEach(
+      item => Object.freeze(this.mirlo[item]),
+    );
     if (!this.mirlo._is_unsafe) {
       this.#sdom = this.attachShadow({mode: 'closed'});
     }
@@ -208,20 +203,16 @@ class Component extends HTMLElement {
    * @param {string} new_value - The new value.
    */
   onStateChanged(prop: string, old_value: string, new_value: string) {
-    if (
-      old_value !== new_value &&
-      this.mirlo._state_binds &&
-      Object.hasOwn(this.mirlo._state_binds, prop)
-    ) {
+    if (old_value !== new_value && this.mirlo._state_binds && Object.hasOwn(this.mirlo._state_binds, prop)) {
       // $FlowFixMe[incompatible-use]
       const bind: MirloComponentBind = this.mirlo._state_binds[prop];
       if (bind) {
         let targets;
-        if (typeof bind.id === "string") {
+        if (typeof bind.id === 'string') {
           targets = [this.queryId(bind.id)];
-        } else if (typeof bind.selector === "string") {
+        } else if (typeof bind.selector === 'string') {
           targets = [this.query(bind.selector)];
-        } else if (typeof bind.selectorAll === "string") {
+        } else if (typeof bind.selectorAll === 'string') {
           targets = Array.from(this.queryAll(bind.selectorAll));
         } else {
           targets = [this];
@@ -236,10 +227,7 @@ class Component extends HTMLElement {
           if (this.mirlo._skip_queue_state_raf) {
             this.#queueStateFlush();
           } else {
-            this.#queue_state_raf = window.requestAnimationFrame(
-              () => this.#queueStateFlush(),
-              this.root,
-            );
+            this.#queue_state_raf = window.requestAnimationFrame(() => this.#queueStateFlush(), this.root);
           }
         }
       }
@@ -286,9 +274,7 @@ class Component extends HTMLElement {
    * @private
    */
   #queueStateFlush() {
-    this.#queue_state_changes.forEach(item =>
-      this.constructor.updateStateBind(...item),
-    );
+    this.#queue_state_changes.forEach(item => this.constructor.updateStateBind(...item));
     this.#queue_state_changes = [];
     this.#queue_state_raf = 0;
   }
@@ -298,9 +284,7 @@ class Component extends HTMLElement {
    * A template is created using the node 'template' with an 'id' like "template-mirlo-<component name>".
    */
   renderTemplate() {
-    const template = document.getElementById(
-      `template-${this.tagName.toLowerCase()}`,
-    );
+    const template = document.getElementById(`template-${this.tagName.toLowerCase()}`);
     if (template instanceof HTMLTemplateElement) {
       const tmpl_node = template.content.cloneNode(true);
       if (this.mirlo._external_rel_styles) {
@@ -343,9 +327,7 @@ class Component extends HTMLElement {
    */
   static getActiveComponent(): Component | null {
     if (!active_component) {
-      throw new Error(
-        'No active component. Hook functions must be used in the constructor.',
-      );
+      throw new Error('No active component. Hook functions must be used in the constructor.');
     }
     return active_component;
   }

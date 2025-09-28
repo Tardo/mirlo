@@ -1,12 +1,10 @@
-The components in Mirlo are basically 'Web Components' that enable 'Shadow Root'
-by default:
+The components in Mirlo are basically 'Web Components' that enable 'Shadow Root' by default:
 
 ![image](https://developer.mozilla.org/es/docs/Web/API/Web_components/Using_shadow_DOM/shadowdom.svg)
 
 # Create a basic component
 
-To implement a component you simply create a class that extends `Component` and
-register it in Mirlo:
+To implement a component you simply create a class that extends `Component` and register it in Mirlo:
 
 ```javascript
 import {Component, registerComponent} from 'mirlo';
@@ -63,8 +61,8 @@ Now, use it:
 
 ## Hook Functions
 
-Components implements 'Hook Functions', these functions only can be called in
-the `onSetup` step. With these functions you can configure the component:
+Components implements 'Hook Functions', these functions only can be called in the `onSetup` step. With these functions
+you can configure the component:
 
 - `useEvents()` -> Configure component event listeners.
 
@@ -114,8 +112,8 @@ the `onSetup` step. With these functions you can configure the component:
 
 - `useStateBinds` -> Configure component state binds.
 
-  The function receives an object with the following scheme. Note that only can
-  use one of the 'id', 'selector' or ' selectorAll' options.
+  The function receives an object with the following scheme. Note that only can use one of the 'id', 'selector' or '
+  selectorAll' options.
 
   ```
   {
@@ -141,8 +139,7 @@ the `onSetup` step. With these functions you can configure the component:
 
 - `useStyles()` -> Configure component styles.
 
-  The function receives an array of strings with the location of the css
-  resources:
+  The function receives an array of strings with the location of the css resources:
 
   ```
   [<Strings>]

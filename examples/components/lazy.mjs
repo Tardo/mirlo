@@ -11,10 +11,7 @@ export default class LazyComponent extends Component {
         const targetAttributeName = dataName.replace(/^lazy/, '').toLowerCase();
         const targetAttributeValue = dom_el.getAttribute(targetAttributeName);
         const targetLazyAttributeValue = dom_el.dataset[dataName];
-        if (
-          !targetAttributeValue ||
-          targetAttributeValue !== targetLazyAttributeValue
-        ) {
+        if (!targetAttributeValue || targetAttributeValue !== targetLazyAttributeValue) {
           attrs[targetAttributeName] = targetLazyAttributeValue;
           if (remove_attr) {
             dom_el.removeAttribute(dataName);

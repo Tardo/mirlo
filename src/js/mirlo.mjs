@@ -1,12 +1,6 @@
 // @flow strict
 // Base
-import {
-  registerComponent,
-  getComponentClass,
-  registerService,
-  getServiceClass,
-  getService,
-} from './base/app';
+import {registerComponent, getComponentClass, registerService, getServiceClass, getService} from './base/app';
 import Component from './base/component';
 import AnimatedComponent from './components/animated';
 import Service from './base/service';

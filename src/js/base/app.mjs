@@ -6,10 +6,10 @@
  * @see Service
  */
 
-import typeof ComponentCtor from './component'
-import typeof ServiceCtor from './service'
-import type Component from './component'
-import type Service from './service'
+import typeof ComponentCtor from './component';
+import typeof ServiceCtor from './service';
+import type Component from './component';
+import type Service from './service';
 
 /**
  * This are the internal registry for classes.

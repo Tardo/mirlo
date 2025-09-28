@@ -1,10 +1,10 @@
 // @flow strict
-import type Component from "./component";
+import type Component from './component';
 
 export type MirloStateHandler = {
   _component_obj: Component | null,
-  ...,
-}
+  ...
+};
 
 /**
  * Proxy handler for the components state.

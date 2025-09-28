@@ -44,6 +44,7 @@
   "devDependencies": {
     "@babel/preset-env": "^7.28.3",
     "@babel/preset-flow": "^7.27.1",
+    "@prettier/plugin-hermes": "^0.0.3",
     "@rollup/plugin-alias": "^5.1.1",
     "@rollup/plugin-babel": "^6.0.4",
     "@rollup/plugin-eslint": "^9.0.5",
@@ -129,6 +130,9 @@
     "vueIndentScriptAndStyle": false,
     "endOfLine": "lf",
     "embeddedLanguageFormatting": "auto",
-    "singleAttributePerLine": false
+    "singleAttributePerLine": false,
+    "plugins": [
+      "@prettier/plugin-hermes"
+    ]
   }
 }

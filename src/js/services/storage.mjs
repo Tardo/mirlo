@@ -1,7 +1,7 @@
 // @flow strict
 import Service from '@mirlo/base/service';
 
-export type CallbackStorageOnError = {error: mixed} => void;
+export type CallbackStorageOnError = ({error: mixed}) => void;
 
 /**
  * Class to implement Browser Storage operations as a Service.
@@ -21,9 +21,7 @@ export class StorageService extends Service {
    */
   getItem(item: string, def_value: mixed): mixed {
     const store_value = this.storage.getItem(item);
-    return (
-      (this.storage && typeof store_value === "string" && JSON.parse(store_value)) || def_value
-    );
+    return (this.storage && typeof store_value === 'string' && JSON.parse(store_value)) || def_value;
   }
 
   /**

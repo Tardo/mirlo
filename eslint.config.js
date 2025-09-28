@@ -27,7 +27,7 @@ export default [
       },
     },
     plugins: {
-      "ft-flow": ftflow,
+      'ft-flow': ftflow,
     },
     rules: {
       eqeqeq: 'error',

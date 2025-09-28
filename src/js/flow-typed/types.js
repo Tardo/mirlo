@@ -2,7 +2,7 @@ declare type MirloStorage = typeof localStorage | typeof sessionStorage;
 
 declare type MirloHTTPResponseMessage = {
   e200: string,
-}
+};
 declare type MirloHTTPMethod = 'POST' | 'GET';
 
 declare type MirloEventCallback = () => Promise<mixed>;
@@ -26,7 +26,7 @@ declare type MirloFetchData = {
   data: Object,
   method: MirloHTTPMethod,
   cache_name: string,
-}
+};
 
 declare type MirloComponentBase = {
   options: {[string]: mixed},

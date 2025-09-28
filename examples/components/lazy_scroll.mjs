@@ -17,10 +17,7 @@ export default class LazyScrollComponent extends LazyComponent {
       },
       this.options,
     );
-    this.load = $.debounce(
-      this.#doLazyLoad.bind(this),
-      this.options.bounce_time_scroll,
-    );
+    this.load = $.debounce(this.#doLazyLoad.bind(this), this.options.bounce_time_scroll);
   }
 
   onStart() {
@@ -48,20 +45,13 @@ export default class LazyScrollComponent extends LazyComponent {
   }
 
   #isOptionVisible(dom_el) {
-    let [ddViewLeft, ddViewTop, ddViewRight, ddViewBottom] =
-      this.#getDimensions(this.dom_el);
+    let [ddViewLeft, ddViewTop, ddViewRight, ddViewBottom] = this.#getDimensions(this.dom_el);
     ddViewLeft -= this.options.zone_x_offset;
     ddViewTop -= this.options.zone_y_offset;
     ddViewRight += this.options.zone_x_offset;
     ddViewBottom += this.options.zone_y_offset;
-    const [elemLeft, elemTop, elemRight, elemBottom] =
-      this.#getDimensions(dom_el);
-    return (
-      elemLeft <= ddViewRight &&
-      elemTop <= ddViewBottom &&
-      elemRight >= ddViewLeft &&
-      elemBottom >= ddViewTop
-    );
+    const [elemLeft, elemTop, elemRight, elemBottom] = this.#getDimensions(dom_el);
+    return elemLeft <= ddViewRight && elemTop <= ddViewBottom && elemRight >= ddViewLeft && elemBottom >= ddViewTop;
   }
 
   #onScrollContainer() {

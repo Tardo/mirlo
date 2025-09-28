@@ -1,7 +1,6 @@
 # Create a basic animated component
 
-To implement a animated component you simply create a class that extends
-`AnimatedComponent` and register it in Mirlo:
+To implement a animated component you simply create a class that extends `AnimatedComponent` and register it in Mirlo:
 
 ```javascript
 import {AnimatedComponent, registerComponent} from 'mirlo';

@@ -10,11 +10,10 @@ Mirlo comes with some built-in services:
 
 ## Modify built-in services
 
-Overwriting of registered services is allowed. To do so, simply indicate that
-you want to " forced" register the service.
+Overwriting of registered services is allowed. To do so, simply indicate that you want to " forced" register the
+service.
 
-For example, if we want to modify the headers sent by the 'requests' service we
-can do something like this:
+For example, if we want to modify the headers sent by the 'requests' service we can do something like this:
 
 ```javascript
 import {RequestsService, registerService} from 'mirlo';

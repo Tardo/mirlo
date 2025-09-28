@@ -5,10 +5,8 @@ import {ServiceTest02, Test02} from './components/test02';
 import Test03 from './components/test03';
 import {mockFetch} from './mocks';
 
-const waitEvent = (elm, evt) =>
-  new Promise(resolve => elm.addEventListener(evt, resolve));
-const waitRAF = elm =>
-  new Promise(resolve => requestAnimationFrame(resolve, elm));
+const waitEvent = (elm, evt) => new Promise(resolve => elm.addEventListener(evt, resolve));
+const waitRAF = elm => new Promise(resolve => requestAnimationFrame(resolve, elm));
 const MAX_COMPONENTS = 2000;
 
 beforeAll(async () => {
@@ -86,9 +84,7 @@ test(`on-fly component performance [${MAX_COMPONENTS} components]`, async () => 
   }
   document.getElementById('containerC').appendChild(containerD);
   await new Promise(process.nextTick); // flush promises
-  const componentTest = document.getElementById(
-    `test-comp-rmv-${MAX_COMPONENTS - 1}`,
-  );
+  const componentTest = document.getElementById(`test-comp-rmv-${MAX_COMPONENTS - 1}`);
   expect(componentTest).toBeDefined();
   expect(componentTest.mirlo).toBeDefined();
 });
