@@ -4,9 +4,9 @@ on:
   schedule:
     - cron: '0 0 * * SUN'
   push:
-    branches: [main]
+    branches: [master]
   pull_request:
-    branches: [main]
+    branches: [master]
 
 jobs:
   validations:
