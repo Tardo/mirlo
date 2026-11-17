@@ -5,5 +5,5 @@ docs
 *.code-workspace
 *.lock
 *.toml
-package-lock.json
+pnpm-lock.yaml
 LICENSE
