@@ -1,7 +1,7 @@
 // @flow strict
 import Service from '@mirlo/base/service';
 
-export type CallbackStorageOnError = ({error: mixed}) => void;
+export type CallbackStorageOnError = ({error: unknown}) => void;
 
 /**
  * Class to implement Browser Storage operations as a Service.
@@ -19,9 +19,16 @@ export class StorageService extends Service {
    * @param {Any} def_value - The default value.
    * @returns {Any}
    */
-  getItem(item: string, def_value: mixed): mixed {
-    const store_value = this.storage.getItem(item);
-    return (this.storage && typeof store_value === 'string' && JSON.parse(store_value)) || def_value;
+  getItem(item: string, def_value: unknown): unknown {
+    const store_value = this.storage?.getItem(item);
+    if (typeof store_value !== 'string') {
+      return def_value;
+    }
+    try {
+      return JSON.parse(store_value);
+    } catch {
+      return def_value;
+    }
   }
 
   /**
@@ -31,9 +38,9 @@ export class StorageService extends Service {
    * @param {Function} on_error - The error callback.
    * @returns {Any}
    */
-  setItem(item: string, value: mixed, on_error: CallbackStorageOnError): mixed {
+  setItem(item: string, value: unknown, on_error?: CallbackStorageOnError): unknown {
     try {
-      return this.storage.setItem(item, JSON.stringify(String(value)));
+      return this.storage.setItem(item, JSON.stringify(value) ?? 'null');
     } catch (err) {
       if (on_error) {
         on_error(err);
@@ -48,7 +55,7 @@ export class StorageService extends Service {
    * @param {string} item - The key name.
    * @returns {Any}
    */
-  removeItem(item: string): mixed {
+  removeItem(item: string): unknown {
     return (this.storage && this.storage.removeItem(item)) || undefined;
   }
 }

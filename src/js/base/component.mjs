@@ -23,7 +23,7 @@ class Component extends HTMLElement {
    * @type {(Object|Proxy)}
    * @private
    */
-  #root_state: {[string]: mixed} = {};
+  #root_state: {[string]: unknown} = {};
   /**
    * The queue of the state binds changes.
    * @type {Array}
@@ -47,7 +47,13 @@ class Component extends HTMLElement {
    * @type Object
    * @private
    */
-  #netdata: {[string]: mixed} = {};
+  #netdata: {[string]: unknown} = {};
+  /**
+   * Aborts the DOM event listeners added in 'onStart'.
+   * @type {AbortController}
+   * @private
+   */
+  #events_abort: AbortController | null = null;
   /**
    * The root element of the component.
    * @type {HTMLElement}
@@ -79,6 +85,7 @@ class Component extends HTMLElement {
     this.onSetup();
     active_component = null;
     ['_events', '_fetch_data', '_state_binds', '_is_unsafe', '_external_rel_styles', '_skip_queue_state_raf'].forEach(
+      // $FlowFixMe[invalid-computed-prop]
       item => Object.freeze(this.mirlo[item]),
     );
     if (!this.mirlo._is_unsafe) {
@@ -93,15 +100,12 @@ class Component extends HTMLElement {
    * @private
    */
   connectedCallback() {
-    // $FlowFixMe[incompatible-call]
-    this.onWillStart().then(
-      () =>
-        window.requestAnimationFrame(() => {
-          this.mirlo._skip_queue_state_raf = true;
-          this.onStart(...arguments);
-          this.mirlo._skip_queue_state_raf = false;
-        }),
-      this.root,
+    this.onWillStart().then(() =>
+      window.requestAnimationFrame(() => {
+        this.mirlo._skip_queue_state_raf = true;
+        this.onStart(...arguments);
+        this.mirlo._skip_queue_state_raf = false;
+      }),
     );
   }
 
@@ -110,6 +114,8 @@ class Component extends HTMLElement {
    * @private
    */
   disconnectedCallback() {
+    this.#events_abort?.abort();
+    this.#events_abort = null;
     this.onRemove(...arguments);
   }
 
@@ -132,15 +138,13 @@ class Component extends HTMLElement {
    * Invoked when the component is attached to the page. Used to call promises and wait for them before full initialization.
    * @returns {Promise}
    */
-  onWillStart(): Promise<mixed> {
+  onWillStart(): Promise<unknown> {
     if (this.mirlo._state_binds) {
       const state_handler: MirloStateHandler = {
-        _component_obj: null,
-      };
-      Object.assign(state_handler, ComponentStateBinderHandler, {
+        ...ComponentStateBinderHandler,
         _component_obj: this,
-      });
-      // $FlowFixMe[prop-missing]
+      };
+      // $FlowFixMe[incompatible-type]
       this.mirlo.state = new Proxy(this.#root_state, state_handler);
     } else {
       this.mirlo.state = this.#root_state;
@@ -154,8 +158,12 @@ class Component extends HTMLElement {
    */
   onStart() {
     // Assign Events
-    if (this.mirlo._events) {
-      Object.entries(this.mirlo._events).forEach(([selector, event_def]) => {
+    const events_defs = this.mirlo._events;
+    if (events_defs) {
+      // A re-attached node must not accumulate duplicated listeners
+      this.#events_abort?.abort();
+      const abort = (this.#events_abort = new AbortController());
+      Object.entries(events_defs).forEach(([selector, event_def]) => {
         const {mode, events} = event_def;
         let dom_targets;
         if (selector) {
@@ -171,7 +179,7 @@ class Component extends HTMLElement {
           const callback_bind = callback.bind(this);
           for (const dom_target of dom_targets) {
             if (dom_target) {
-              dom_target.addEventListener(ename, callback_bind);
+              dom_target.addEventListener(ename, callback_bind, {signal: abort.signal});
             }
           }
         });
@@ -227,7 +235,7 @@ class Component extends HTMLElement {
           if (this.mirlo._skip_queue_state_raf) {
             this.#queueStateFlush();
           } else {
-            this.#queue_state_raf = window.requestAnimationFrame(() => this.#queueStateFlush(), this.root);
+            this.#queue_state_raf = window.requestAnimationFrame(() => this.#queueStateFlush());
           }
         }
       }
@@ -239,7 +247,7 @@ class Component extends HTMLElement {
    * @returns {Promise}
    * @private
    */
-  async #fetchData(): Promise<mixed> {
+  async #fetchData(): Promise<unknown> {
     let res;
     if (this.mirlo._fetch_data) {
       const fetch_data_entries = Object.entries(this.mirlo._fetch_data);
@@ -251,8 +259,10 @@ class Component extends HTMLElement {
             requests
               .queryJSON(
                 value.endpoint,
+                // $FlowFixMe[incompatible-type]
                 {
-                  body: value.data,
+                  // fetch() rejects GET requests with a body
+                  ...(value.method === HTTP_METHOD.GET ? {} : {body: value.data}),
                   method: value.method ?? HTTP_METHOD.POST,
                 },
                 value.cache_name,
@@ -293,6 +303,7 @@ class Component extends HTMLElement {
           dom_el_link.setAttribute('type', 'text/css');
           dom_el_link.setAttribute('rel', 'stylesheet');
           dom_el_link.setAttribute('href', href);
+          // $FlowFixMe[prop-missing]
           tmpl_node.prepend(dom_el_link);
         });
       }
@@ -397,7 +408,7 @@ class Component extends HTMLElement {
    * @param {string} ref_name = The fetch data reference name.
    * @type {Object}
    */
-  getFetchData(ref_name: string): mixed {
+  getFetchData(ref_name: string): unknown {
     return this.#netdata[ref_name];
   }
 
@@ -406,7 +417,7 @@ class Component extends HTMLElement {
    * @param {string} selector - The CSS selector.
    * @returns {NodeList}
    */
-  queryAll(selector: string): NodeList<HTMLElement> {
+  queryAll(selector: string): NodeListOf<HTMLElement> {
     return this.root.querySelectorAll(selector);
   }
 
@@ -416,6 +427,7 @@ class Component extends HTMLElement {
    * @returns {HTMLElement}
    */
   query(selector: string): HTMLElement | null {
+    // $FlowFixMe[incompatible-type]
     return this.root.querySelector(selector);
   }
 

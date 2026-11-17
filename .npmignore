@@ -12,5 +12,4 @@ mirlo.code-workspace
 mirlo.png
 package-lock.json
 rollup.config.mjs
-setup-jest.mjs
 jsdoc.json

@@ -1,6 +1,5 @@
 import globals from 'globals';
 import js from '@eslint/js';
-import ftflow from 'eslint-plugin-ft-flow';
 import prettierConfig from 'eslint-config-prettier';
 import hermes from 'hermes-eslint';
 
@@ -25,9 +24,6 @@ export default [
       globals: {
         ...globals.browser,
       },
-    },
-    plugins: {
-      'ft-flow': ftflow,
     },
     rules: {
       eqeqeq: 'error',

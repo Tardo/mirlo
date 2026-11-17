@@ -30,6 +30,14 @@ class AnimatedComponent extends Component {
   }
 
   /**
+   * @override
+   */
+  disconnectedCallback() {
+    this.stopAnimation(); // otherwise the loop runs forever on a removed node
+    super.disconnectedCallback(...arguments);
+  }
+
+  /**
    * Start the animation loop
    */
   startAnimation() {
@@ -37,7 +45,7 @@ class AnimatedComponent extends Component {
       window.cancelAnimationFrame(this.#animation_raf);
     }
     this.#animation_running = true;
-    this.#animation_raf = window.requestAnimationFrame(timestamp => this.#animate(timestamp), this.root);
+    this.#animation_raf = window.requestAnimationFrame(timestamp => this.#animate(timestamp));
   }
 
   /**
@@ -61,7 +69,7 @@ class AnimatedComponent extends Component {
     this.onAnimationStep(timestamp);
     this.mirlo._skip_queue_state_raf = false;
     if (this.#animation_running) {
-      this.#animation_raf = window.requestAnimationFrame(timestamp_raf => this.#animate(timestamp_raf), this.root);
+      this.#animation_raf = window.requestAnimationFrame(timestamp_raf => this.#animate(timestamp_raf));
     }
   }
 

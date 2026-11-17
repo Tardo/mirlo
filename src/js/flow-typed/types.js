@@ -5,7 +5,7 @@ declare type MirloHTTPResponseMessage = {
 };
 declare type MirloHTTPMethod = 'POST' | 'GET';
 
-declare type MirloEventCallback = () => Promise<mixed>;
+declare type MirloEventCallback = () => Promise<unknown>;
 
 declare type MirloComponentEvent = {
   mode: string,
@@ -29,8 +29,8 @@ declare type MirloFetchData = {
 };
 
 declare type MirloComponentBase = {
-  options: {[string]: mixed},
-  state: {[string]: mixed},
+  options: {[string]: unknown},
+  state: {[string]: unknown},
   _events: {[string]: MirloComponentEvent} | null,
   _fetch_data: {[string]: MirloFetchData} | null,
   _state_binds: {[string]: MirloComponentBind} | null,

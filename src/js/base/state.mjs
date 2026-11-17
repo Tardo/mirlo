@@ -21,7 +21,7 @@ const state_proxy_handler: MirloStateHandler = {
   /** Relation to the mirlo component */
   _component_obj: null,
 
-  set(target: {...}, prop: string, value: mixed): boolean {
+  set(target: {...}, prop: string, value: unknown): boolean {
     // $FlowFixMe[invalid-computed-prop]
     // $FlowFixMe[object-this-reference]
     this._component_obj?.onStateChanged(prop, target[prop], String(value));

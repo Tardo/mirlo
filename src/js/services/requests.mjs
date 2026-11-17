@@ -40,25 +40,27 @@ class RequestsService extends Service {
   /**
    * Fetch JSON data.
    * @param {string} url - The URL.
-   * @param {RequestOptions} custom_options - The request options.
+   * @param {RequestInit} custom_options - The request options.
    * @param {string} cache_name - The cache name.
    * @returns {Promise}
    */
-  async queryJSON(url: string, custom_options: RequestOptions, cache_name: string): Promise<{...}> {
+  async queryJSON(url: string, custom_options: RequestInit, cache_name: string): Promise<{...}> {
     const use_cache = typeof cache_name !== 'undefined';
     let prom_response;
     if (use_cache && Object.hasOwn(this.#cache, cache_name)) {
       prom_response = this.#cache[cache_name];
     } else {
-      const query_options: RequestOptions = {
+      const query_options: RequestInit = {
         headers: {
           'Content-Type': 'application/json',
         },
+        ...custom_options,
       };
-      Object.assign(query_options, custom_options);
 
       if (use_cache) {
         prom_response = this.#cache[cache_name] = fetch(url, query_options);
+        // Do not keep failed requests cached
+        prom_response.catch(() => delete this.#cache[cache_name]);
       } else {
         prom_response = fetch(url, query_options);
       }
@@ -75,53 +77,55 @@ class RequestsService extends Service {
   /**
    * POST Fetch JSON data.
    * @param {string} url - The URL.
-   * @param {RequestOptions} custom_options - The request options.
+   * @param {RequestInit} custom_options - The request options.
    * @param {string} cache_name - The cache name.
    * @returns {Promise}
    */
-  postJSON(url: string, custom_options: RequestOptions, cache_name: string): Promise<{...}> {
-    const query_options: RequestOptions = {
+  postJSON(url: string, custom_options: RequestInit, cache_name: string): Promise<{...}> {
+    const query_options: RequestInit = {
       method: HTTP_METHOD.POST,
+      ...custom_options,
     };
-    Object.assign(query_options, custom_options);
     return this.queryJSON(url, query_options, cache_name);
   }
 
   /**
    *
    * @param {string} url - The URL.
-   * @param {RequestOptions} custom_options - The request options.
+   * @param {RequestInit} custom_options - The request options.
    * @param {string} cache_name - The cache name.
    * @returns {Promise}
    */
-  getJSON(url: string, custom_options: RequestOptions, cache_name: string): Promise<{...}> {
-    const query_options: RequestOptions = {
+  getJSON(url: string, custom_options: RequestInit, cache_name: string): Promise<{...}> {
+    const query_options: RequestInit = {
       method: HTTP_METHOD.GET,
+      ...custom_options,
     };
-    Object.assign(query_options, custom_options);
     return this.queryJSON(url, query_options, cache_name);
   }
 
   /**
    * POST Fetch data.
    * @param {string} url - The URL.
-   * @param {RequestOptions} custom_options - The request options.
+   * @param {RequestInit} custom_options - The request options.
    * @param {string} cache_name - The cache store name.
    * @returns {Any}
    */
-  async post(url: string, custom_options: RequestOptions, cache_name: string): Promise<mixed> {
+  async post(url: string, custom_options: RequestInit, cache_name: string): Promise<unknown> {
     const use_cache = typeof cache_name !== 'undefined';
     let prom_response;
     if (use_cache && Object.hasOwn(this.#cache, cache_name)) {
       prom_response = this.#cache[cache_name];
     } else {
-      const query_options: RequestOptions = {
+      const query_options: RequestInit = {
         method: 'POST',
+        ...custom_options,
       };
-      Object.assign(query_options, custom_options);
 
       if (use_cache) {
         prom_response = this.#cache[cache_name] = fetch(url, query_options);
+        // Do not keep failed requests cached
+        prom_response.catch(() => delete this.#cache[cache_name]);
       } else {
         prom_response = fetch(url, query_options);
       }
@@ -133,23 +137,25 @@ class RequestsService extends Service {
   /**
    * GET Fetch data.
    * @param {string} url
-   * @param {RequestOptions} custom_options - The request options.
+   * @param {RequestInit} custom_options - The request options.
    * @param {string} cache_name - The cache store name.
    * @returns {Any}
    */
-  async get(url: string, custom_options: RequestOptions, cache_name: string): Promise<mixed> {
+  async get(url: string, custom_options: RequestInit, cache_name: string): Promise<unknown> {
     const use_cache = typeof cache_name !== 'undefined';
     let prom_response;
     if (use_cache && Object.hasOwn(this.#cache, cache_name)) {
       prom_response = this.#cache[cache_name];
     } else {
-      const query_options: RequestOptions = {
+      const query_options: RequestInit = {
         method: 'GET',
+        ...custom_options,
       };
-      Object.assign(query_options, custom_options);
 
       if (use_cache) {
         prom_response = this.#cache[cache_name] = fetch(url, query_options);
+        // Do not keep failed requests cached
+        prom_response.catch(() => delete this.#cache[cache_name]);
       } else {
         prom_response = fetch(url, query_options);
       }
