@@ -5,11 +5,20 @@ declare type MirloHTTPResponseMessage = {
 };
 declare type MirloHTTPMethod = 'POST' | 'GET';
 
-declare type MirloEventCallback = () => Promise<unknown>;
+declare type MirloEventCallback = (ev: Event, matched: HTMLElement) => unknown;
 
 declare type MirloComponentEvent = {
   mode: string,
+  delegate?: string,
   events: {[string]: MirloEventCallback},
+};
+
+declare type MirloListItemBind = {selector?: string, selectorAll?: string, attribute?: string};
+
+declare type MirloComponentList = {
+  template: string,
+  key: string | ((item: unknown, index: number) => unknown),
+  binds?: {[string]: MirloListItemBind},
 };
 
 declare type MirloComponentBind = {
@@ -17,6 +26,7 @@ declare type MirloComponentBind = {
   selector?: string,
   selectorAll?: string,
   attribute: string,
+  each?: MirloComponentList,
 };
 
 declare type MirloComponentState = [HTMLElement | null, string, string];

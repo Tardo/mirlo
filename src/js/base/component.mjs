@@ -1,6 +1,7 @@
 // @flow strict
 import {default as RequestsService, HTTP_METHOD} from '@mirlo/services/requests';
-import ComponentStateBinderHandler from './state';
+import ComponentStateBinderHandler, {toReactive} from './state';
+import {ListRenderer, findListEntry, validateListBind} from './list';
 import {getService} from './app';
 
 import type Service from './service';
@@ -11,6 +12,20 @@ import type {MirloStateHandler} from './state.mjs';
  * @private
  */
 let active_component: Component | null = null;
+
+/**
+ * Events that don't bubble, they need 'capture' to be delegated.
+ * @private
+ */
+const NON_BUBBLING_EVENTS: Set<string> = new Set([
+  'focus',
+  'blur',
+  'mouseenter',
+  'mouseleave',
+  'load',
+  'error',
+  'scroll',
+]);
 
 /**
  * Class representing a Base Component node.
@@ -36,6 +51,30 @@ class Component extends HTMLElement {
    * @private
    */
   #queue_state_raf = 0;
+  /**
+   * The state properties with list binds pending to render.
+   * @type {Set}
+   * @private
+   */
+  #queue_lists: Set<string> = new Set();
+  /**
+   * Flag to know if the render of the lists is scheduled.
+   * @type {Boolean}
+   * @private
+   */
+  #queue_lists_scheduled = false;
+  /**
+   * The list renderers by state property.
+   * @type {Map}
+   * @private
+   */
+  #lists: Map<string, ListRenderer> = new Map();
+  /**
+   * The state proxy handler.
+   * @type {Object}
+   * @private
+   */
+  #state_handler: MirloStateHandler | null = null;
   /**
    * The Shadow Root of the node
    * @type {NodeList}
@@ -143,7 +182,9 @@ class Component extends HTMLElement {
       const state_handler: MirloStateHandler = {
         ...ComponentStateBinderHandler,
         _component_obj: this,
+        _caches: {},
       };
+      this.#state_handler = state_handler;
       // $FlowFixMe[incompatible-type]
       this.mirlo.state = new Proxy(this.#root_state, state_handler);
     } else {
@@ -164,7 +205,7 @@ class Component extends HTMLElement {
       this.#events_abort?.abort();
       const abort = (this.#events_abort = new AbortController());
       Object.entries(events_defs).forEach(([selector, event_def]) => {
-        const {mode, events} = event_def;
+        const {mode, events, delegate} = event_def;
         let dom_targets;
         if (selector) {
           if (mode === 'id') {
@@ -178,7 +219,24 @@ class Component extends HTMLElement {
         Object.entries(events).forEach(([ename, callback]) => {
           const callback_bind = callback.bind(this);
           for (const dom_target of dom_targets) {
-            if (dom_target) {
+            if (!dom_target) {
+              continue;
+            }
+            if (typeof delegate === 'string') {
+              // Works with nodes that don't exist yet (lists). Non-bubbling events must be captured.
+              dom_target.addEventListener(
+                ename,
+                ev => {
+                  // $FlowFixMe[incompatible-type]
+                  const matched = ev.target instanceof Element ? ev.target.closest(delegate) : null;
+                  if (matched && dom_target.contains(matched)) {
+                    callback_bind(ev, matched);
+                  }
+                },
+                {signal: abort.signal, capture: NON_BUBBLING_EVENTS.has(ename)},
+              );
+            } else {
+              // $FlowFixMe[incompatible-type]
               dom_target.addEventListener(ename, callback_bind, {signal: abort.signal});
             }
           }
@@ -210,7 +268,21 @@ class Component extends HTMLElement {
    * @param {string} old_value - The old value.
    * @param {string} new_value - The new value.
    */
-  onStateChanged(prop: string, old_value: string, new_value: string) {
+  onStateChanged(prop: string, old_value: unknown, new_value: unknown) {
+    const binds = this.mirlo._state_binds;
+    if (binds && Object.hasOwn(binds, prop) && binds[prop].each) {
+      // Lists are rendered from the final state, so every change (even in-place) must be queued
+      this.#queue_lists.add(prop);
+      if (!this.#queue_lists_scheduled) {
+        this.#queue_lists_scheduled = true;
+        if (this.mirlo._skip_queue_state_raf) {
+          queueMicrotask(() => this.#flushLists());
+        } else {
+          window.requestAnimationFrame(() => this.#flushLists());
+        }
+      }
+      return;
+    }
     if (old_value !== new_value && this.mirlo._state_binds && Object.hasOwn(this.mirlo._state_binds, prop)) {
       // $FlowFixMe[incompatible-use]
       const bind: MirloComponentBind = this.mirlo._state_binds[prop];
@@ -227,7 +299,7 @@ class Component extends HTMLElement {
         }
         this.#queue_state_changes.push(
           ...targets.map(target => {
-            return [target, bind.attribute, new_value];
+            return [target, bind.attribute, String(new_value)];
           }),
         );
 
@@ -287,6 +359,76 @@ class Component extends HTMLElement {
     this.#queue_state_changes.forEach(item => this.constructor.updateStateBind(...item));
     this.#queue_state_changes = [];
     this.#queue_state_raf = 0;
+  }
+
+  /**
+   * Render the lists with pending changes.
+   * @private
+   */
+  #flushLists(): void {
+    const props = Array.from(this.#queue_lists);
+    this.#queue_lists.clear();
+    this.#queue_lists_scheduled = false;
+    // One failing list must not drop the others
+    let error: unknown = null;
+    props.forEach(prop => {
+      try {
+        this.#renderList(prop);
+      } catch (err) {
+        error ??= err;
+      }
+    });
+    if (error !== null) {
+      throw error;
+    }
+  }
+
+  /**
+   * Render a list state in its container.
+   * @param {string} prop - The state property.
+   * @private
+   */
+  #renderList(prop: string): void {
+    const bind = this.mirlo._state_binds?.[prop];
+    const each = bind?.each;
+    if (!bind || !each) {
+      return;
+    }
+    const container = typeof bind.id === 'string' ? this.queryId(bind.id) : this.query(String(bind.selector));
+    if (!container) {
+      return;
+    }
+    let renderer = this.#lists.get(prop);
+    if (!renderer || renderer.container !== container) {
+      const template = this.queryId(each.template) ?? document.getElementById(each.template);
+      if (!(template instanceof HTMLTemplateElement)) {
+        throw new Error(`List '${prop}': template '${each.template}' not found.`);
+      }
+      renderer = new ListRenderer(prop, container, each, template);
+      this.#lists.set(prop, renderer);
+    }
+    const items = this.#root_state[prop];
+    renderer.render(Array.isArray(items) ? items : []);
+  }
+
+  /**
+   * Get the list item that owns a node (the node of the item or any of its descendants).
+   * Useful in delegated events: `this.getListItem(matched)`.
+   * The item is reactive, changing it updates the list.
+   * @param {Node} node - The node.
+   * @returns {{key: *, index: number, item: *}|null}
+   */
+  getListItem(node: Node): {key: unknown, index: number, item: unknown} | null {
+    const entry = findListEntry(node);
+    const handler = this.#state_handler;
+    if (!entry || !handler) {
+      return null;
+    }
+    const item =
+      entry.item !== null && typeof entry.item === 'object'
+        ? toReactive(handler, entry.prop, entry.item, this.#root_state)
+        : entry.item;
+    return {key: entry.key, index: entry.index, item};
   }
 
   /**
@@ -375,6 +517,7 @@ class Component extends HTMLElement {
   static useStateBinds(state_defs: {[string]: MirloComponentBind}) {
     const comp = this.getActiveComponent();
     if (comp) {
+      Object.entries(state_defs).forEach(([prop, bind]) => validateListBind(prop, bind));
       comp.mirlo._state_binds = state_defs;
     }
   }

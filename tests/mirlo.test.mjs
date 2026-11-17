@@ -3,6 +3,7 @@ import {registerService, registerComponent} from '../dist/mirlo';
 import Test01 from './components/test01';
 import {ServiceTest02, Test02} from './components/test02';
 import Test03 from './components/test03';
+import Test04 from './components/test04';
 import {mockFetch} from './mocks';
 
 const waitEvent = (elm, evt) => new Promise(resolve => elm.addEventListener(evt, resolve));
@@ -16,6 +17,7 @@ beforeAll(async () => {
   registerComponent('test01', Test01);
   registerComponent('test02', Test02);
   registerComponent('test03', Test03);
+  registerComponent('test04', Test04);
   document.body.innerHTML = `
     <template id="template-mirlo-test01">
       <span id="zoneA"></span>
@@ -28,6 +30,12 @@ beforeAll(async () => {
     <template id="template-mirlo-test03">
       <span id="test03_text"></div>
     </template>
+
+    <template id="template-mirlo-test04">
+      <div id="list"></div>
+      <template id="item"><p><span class="idx"></span><b class="name"></b></p></template>
+    </template>
+    <mirlo-test04 id="testD"></mirlo-test04>
 
     <mirlo-test01 id="testA" myval='123'></mirlo-test01>
     <div id="containerB">
@@ -137,4 +145,141 @@ test('component attribute change', async () => {
   expect(dom_el_comp.mirlo.options.myval).toBe('123');
   dom_el_comp.setAttribute('myVal', '42');
   expect(dom_el_comp.mirlo.options.myval).toBe('42');
+});
+
+describe('list binds', () => {
+  const comp = () => document.getElementById('testD');
+  const list = () => comp().queryId('list');
+  const names = () => Array.from(list().children, el => el.querySelector('.name').textContent);
+  const mk = (...ids) => ids.map(id => ({id, name: `n${id}`, done: false}));
+  let moves;
+  beforeAll(() => {
+    const orig = list().insertBefore.bind(list());
+    moves = {count: 0, frags: 0};
+    list().insertBefore = (...args) => {
+      if (args[0] instanceof DocumentFragment) {
+        ++moves.frags;
+      } else {
+        ++moves.count;
+      }
+      return orig(...args);
+    };
+  });
+
+  test('render + reuse nodes + minimal moves', async () => {
+    const state = comp().mirlo.state;
+    state.items = mk(1, 2, 3, 4, 5);
+    await waitRAF();
+    expect(names()).toEqual(['n1', 'n2', 'n3', 'n4', 'n5']);
+    expect(list().children[2].querySelector('.idx').textContent).toBe('2');
+    const node3 = list().children[2];
+
+    moves.count = 0;
+    state.items = mk(1, 2, 3, 4, 5, 6); // append
+    await waitRAF();
+    expect(moves.count).toBe(0);
+
+    moves.count = 0;
+    state.items = mk(1, 5, 3, 4, 2, 6); // swap
+    await waitRAF();
+    expect(names()).toEqual(['n1', 'n5', 'n3', 'n4', 'n2', 'n6']);
+    expect(moves.count).toBeLessThanOrEqual(2);
+    expect(list().children[2]).toBe(node3);
+
+    state.items = mk(6, 3);
+    await waitRAF();
+    expect(names()).toEqual(['n6', 'n3']);
+    expect(list().children[1]).toBe(node3);
+    state.items = [];
+    await waitRAF();
+    expect(list().children.length).toBe(0);
+  });
+
+  test('mutations: push, in-place field, coalesced', async () => {
+    const state = comp().mirlo.state;
+    state.items = mk(1, 2);
+    await waitRAF();
+    const node1 = list().children[0];
+    state.items.push({id: 3, name: 'n3', done: false});
+    state.items[0].name = 'changed';
+    state.items[1].done = true;
+    expect(names()).toEqual(['n1', 'n2']); // deferred
+    await waitRAF();
+    expect(names()).toEqual(['changed', 'n2', 'n3']);
+    expect(list().children[0]).toBe(node1);
+    expect(list().children[1].getAttribute('data-done')).toBe('');
+    expect(list().children[0].hasAttribute('data-done')).toBe(false);
+    state.items.reverse();
+    await waitRAF();
+    expect(names()).toEqual(['n3', 'n2', 'changed']);
+  });
+
+  test('several assignments in one frame render once', async () => {
+    const state = comp().mirlo.state;
+    state.items = [];
+    await waitRAF();
+    moves.frags = 0;
+    for (let i = 1; i <= 5; ++i) {
+      state.items = mk(...Array.from({length: i}, (_, k) => k + 1));
+    }
+    await waitRAF();
+    expect(names().length).toBe(5);
+    expect(moves.frags).toBe(1);
+  });
+
+  test('frozen data can be read and rendered', async () => {
+    const state = comp().mirlo.state;
+    state.items = Object.freeze(mk(1, 2));
+    await waitRAF();
+    expect(names()).toEqual(['n1', 'n2']);
+    expect(state.items.map(item => item.id)).toEqual([1, 2]);
+    expect(state.items[0].name).toBe('n1');
+  });
+
+  test('proxies do not nest when the state is rebuilt', async () => {
+    const state = comp().mirlo.state;
+    state.items = mk(1, 2);
+    for (let i = 0; i < 3; ++i) {
+      state.items = state.items.filter(() => true);
+      state.items = [...state.items];
+    }
+    await waitRAF();
+    let calls = 0;
+    const orig = comp().onStateChanged;
+    comp().onStateChanged = (...args) => {
+      ++calls;
+      return orig.apply(comp(), args);
+    };
+    state.items[0].name = 'x';
+    comp().onStateChanged = orig;
+    expect(calls).toBe(1);
+    await waitRAF();
+    expect(names()).toEqual(['x', 'n2']);
+  });
+
+  test('duplicated key throws and keeps the DOM', async () => {
+    const before = names();
+    const errors = [];
+    const onError = ev => {
+      ev.preventDefault();
+      errors.push(ev.error ?? ev.message);
+    };
+    window.addEventListener('error', onError);
+    comp().mirlo.state.items = mk(1, 1);
+    await waitRAF();
+    window.removeEventListener('error', onError);
+    expect(String(errors[0])).toMatch(/duplicated key '1'/);
+    expect(names()).toEqual(before);
+  });
+
+  test('delegated event on rendered items', async () => {
+    comp().mirlo.state.items = mk(7, 8);
+    await waitRAF();
+    list().children[1].querySelector('.name').click();
+    expect(comp().clicked.key).toBe(8);
+    expect(comp().clicked.index).toBe(1);
+    comp().clicked.item.name = 'clicked';
+    await waitRAF();
+    expect(names()).toEqual(['n7', 'clicked']);
+  });
 });
