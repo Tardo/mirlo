@@ -3,6 +3,7 @@
   "description": "Another Simple JavaScript WC",
   "version": "0.8.0",
   "type": "module",
+  "packageManager": "pnpm@11.10.0",
   "keywords": [
     "webcomponent",
     "simple",
@@ -38,7 +39,7 @@
     "watch": "rollup -c -w",
     "build": "rollup -c",
     "flowcheck": "flow check",
-    "test": "npm run build && node --experimental-vm-modules node_modules/.bin/jest",
+    "test": "pnpm run build && NODE_OPTIONS=--experimental-vm-modules jest",
     "generate-docs": "node scripts/generate-docs.mjs"
   },
   "devDependencies": {
@@ -70,7 +71,7 @@
   "husky": {
     "hooks": {
       "pre-commit": "lint-staged",
-      "pre-push": "node --experimental-vm-modules node_modules/.bin/jest"
+      "pre-push": "NODE_OPTIONS=--experimental-vm-modules jest"
     }
   },
   "lint-staged": {
@@ -124,9 +125,5 @@
     "plugins": [
       "@prettier/plugin-hermes"
     ]
-  },
-  "overrides": {
-    "glob": "^14.0.6",
-    "minimatch": "^11.0.9"
   }
 }

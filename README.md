@@ -14,7 +14,7 @@
 ## Installation
 
 ```bash
-npm i mirlo --save-dev
+pnpm add mirlo --save-dev
 ```
 
 ## Basic Example
